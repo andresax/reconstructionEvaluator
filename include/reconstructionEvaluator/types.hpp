@@ -9,6 +9,8 @@
 #define INCLUDE_RECONSTRUCTIONEVALUATOR_TYPES_HPP_
 
 #include <glm.hpp>
+#include <CGAL/Simple_cartesian.h>
+#include <CGAL/Polyhedron_3.h>
 
 struct CameraType {
   glm::mat3 intrinsics;
@@ -22,6 +24,9 @@ struct CameraType {
   int imageHeight;
 };
 
+typedef CGAL::Simple_cartesian<double> Kernel;
+typedef Kernel::Point_3 Point_3;
+typedef CGAL::Polyhedron_3<Kernel> Polyhedron;
 
 
 #endif /* INCLUDE_RECONSTRUCTIONEVALUATOR_TYPES_HPP_ */

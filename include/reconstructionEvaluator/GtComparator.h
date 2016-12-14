@@ -12,7 +12,8 @@
 #include <vector>
 #include <types.hpp>
 #include <Configuration.h>
-#include <Configuration.h>
+#include <DepthMapFromMesh.h>
+
 namespace reconstructorEvaluator {
 
 class GtComparator {
@@ -21,7 +22,12 @@ public:
   virtual ~GtComparator();
   void run();
 private:
+  void importGT();
+  void importMesh();
   Configuration configuration_;
+
+  Polyhedron meshGt_;
+  Polyhedron meshToBeCompared_;
 };
 
 } /* namespace reconstructorEvaluator */
