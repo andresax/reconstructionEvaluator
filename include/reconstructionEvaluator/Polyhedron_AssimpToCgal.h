@@ -42,13 +42,9 @@ private:
 public:
   bool loadOK;
 
-  Builder_dae(const std::string& pFile) {
-    Assimp::Importer importer;
-
-    const aiScene* scene = importer.ReadFile(pFile, aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_SortByPType);
-
+  Builder_dae(aiMesh* mesh) {
     loadOK = false;
-    mesh_ = scene->mMeshes[i];
+    mesh_ = mesh;
     has_texture_coordinates_ = false;
   }
 
@@ -92,13 +88,15 @@ private:
     for (unsigned int i = 0; i < mesh_->mNumVertices; i++) {
       Vertex_handle vertex = builder.add_vertex(Point(mesh_->mVertices[i].x, mesh_->mVertices[i].y, mesh_->mVertices[i].z));
 
-      if (mesh_->mColors[0] != NULL)
-        vertex->color(mesh_->mColors[0][i].r, mesh_->mColors[0][i].g, mesh_->mColors[0][i].b);
+//      if (mesh_->mColors[0] != NULL)
+//        vertex->color(mesh_->mColors[0][i].r, mesh_->mColors[0][i].g, mesh_->mColors[0][i].b);
+//
+//      if (mesh_->mTextureCoords[0] != NULL) {
+//        has_texture_coordinates_ = true;
+//        vertex->texture_coordinates(mesh_->mTextureCoords[0][i].x, mesh_->mTextureCoords[0][i].y);
+//      }
 
-      if (mesh_->mTextureCoords[0] != NULL) {
-        has_texture_coordinates_ = true;
-        vertex->texture_coordinates(mesh_->mTextureCoords[0][i].x, mesh_->mTextureCoords[0][i].y);
-      }
+      has_texture_coordinates_ = false;
     }
 
     for (unsigned int i = 0; i < mesh_->mNumFaces; i++) {

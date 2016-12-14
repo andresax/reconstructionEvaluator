@@ -12,6 +12,7 @@
 #include <vector>
 #include <types.hpp>
 #include <Configuration.h>
+#include <Configuration.h>
 namespace reconstructorEvaluator {
 
 class GtComparator {
