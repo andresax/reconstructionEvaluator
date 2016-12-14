@@ -11,11 +11,14 @@ find_package(Boost COMPONENTS filesystem system thread REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(CGAL REQUIRED)
 find_package(MPRF REQUIRED) #multiple precision useful for cgal
+find_package(ASSIMP REQUIRED)
 find_package(OpenMP)
 if (OPENMP_FOUND) 
     set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif()
+ 
+
  
 
   
@@ -26,6 +29,7 @@ include_directories(
                       include/reconstructionEvaluator/
                       include/reconstructionEvaluator/camParser/
                       external/glm/glm/
+                      external/assimp/include/assimp
                       ) 
 # ----------------------- GCC FLAGS ----------------------------
  
@@ -48,6 +52,7 @@ target_link_libraries(reconstructionEvaluator ${OpenCV_LIBS}
                                             -lmpfr
                                             ${CGAL_LIBRARY}
                                             ${Boost_LIBRARIES}
+                                            ${ASSIMP_LIBRARY} 
                                             )
 
 

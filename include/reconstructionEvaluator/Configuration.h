@@ -22,9 +22,25 @@ public:
   virtual ~Configuration();
   void setConfiguration(const std::string &path);
   void parse();
+
+  const std::vector<CameraType>& getCameras() const {
+    return cameras_;
+  }
+
+  const std::vector<int>& getCamerasIdx() const {
+    return camerasIdx_;
+  }
+
+  const std::string& getMeshPath() const {
+    return meshPath_;
+  }
+
+
 private:
   std::ifstream file_;
   bool parseWhichCams(const std::string &path);
+
+  std::string meshPath_;
   std::vector<CameraType> cameras_;
   std::vector<int> camerasIdx_;
 

@@ -34,13 +34,12 @@ void Configuration::parse() {
 
   CameraParser cameraParser;
   std::string gt;
-  std::string meshPath;
   std::string cameraPoses;
   std::string whichCams;
   std::string camerasGT;
 
   utilities::readLineAndStore(file_, gt);
-  utilities::readLineAndStore(file_, meshPath);
+  utilities::readLineAndStore(file_, meshPath_);
   utilities::readLineAndStore(file_, cameraPoses);
   if (!cameraParser.parseCameras(cameraPoses)) {
     std::cout << "Configuration::parse ERROR parsing cameras" << std::endl;
