@@ -19,6 +19,15 @@ Configuration::Configuration(const std::string &path) {
     std::cout << "Error reading " << path << std::endl;
 }
 
+void Configuration::setConfiguration(const std::string &path) {
+  file_.open(path.c_str());
+  if (file_.is_open())
+    std::cout << path << " opened" << std::endl;
+  else
+    std::cout << "Error reading " << path << std::endl;
+}
+Configuration::Configuration() {
+}
 Configuration::~Configuration() {
 }
 void Configuration::parse() {

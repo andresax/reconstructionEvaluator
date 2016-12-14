@@ -18,14 +18,15 @@ namespace reconstructorEvaluator {
 class Configuration {
 public:
   Configuration(const std::string &path);
+  Configuration();
   virtual ~Configuration();
+  void setConfiguration(const std::string &path);
   void parse();
 private:
   std::ifstream file_;
   bool parseWhichCams(const std::string &path);
   std::vector<CameraType> cameras_;
   std::vector<int> camerasIdx_;
-
 
 };
 
