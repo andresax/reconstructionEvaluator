@@ -25,7 +25,7 @@ GtComparator::~GtComparator() {
 }
 
 void GtComparator::run() {
-  importGT();
+  //importGT();
   importMesh();
 
   std::cout<<"GtComparator:: writing mesh...";
@@ -35,11 +35,11 @@ void GtComparator::run() {
   std::cout<<"DONE."<<std::endl;
 
 
-  std::cout<<"GtComparator:: writing mesh gt...";
-  std::cout.flush();
-  std::ofstream fileTest2("testGT.off");
-  fileTest2 << meshGt_;
-  std::cout<<"DONE."<<std::endl;
+//  std::cout<<"GtComparator:: writing mesh gt...";
+//  std::cout.flush();
+//  std::ofstream fileTest2("testGT.off");
+//  fileTest2 << meshGt_;
+//  std::cout<<"DONE."<<std::endl;
 
   DepthMapFromMesh dmfm(&meshToBeCompared_);
 

@@ -45,7 +45,8 @@ public:
   void operator()(HDS& hds) {
     Builder builder(hds, true);
 
-    builder.begin_surface(mesh_->mNumVertices, mesh_->mNumFaces);
+//    builder.begin_surface(mesh_->mNumVertices, mesh_->mNumFaces);
+    builder.begin_surface(3, 1, 6);
     this->construct(builder);
 
     if (!this->loadOK)
@@ -61,18 +62,23 @@ public:
 private:
 
   void construct(Builder &builder) {
+
     for (unsigned int i = 0; i < mesh_->mNumVertices; i++) {
-      Vertex_handle vertex = builder.add_vertex(Point(mesh_->mVertices[i].x, mesh_->mVertices[i].y, mesh_->mVertices[i].z));
+      Vertex_handle vertex = builder.add_vertex(Point((float)mesh_->mVertices[i].x, (float)mesh_->mVertices[i].y, (float)mesh_->mVertices[i].z));
     }
 
     for (unsigned int i = 0; i < mesh_->mNumFaces; i++) {
       builder.begin_facet();
-      builder.add_vertex_to_facet(mesh_->mFaces[i].mIndices[0]);
-      builder.add_vertex_to_facet(mesh_->mFaces[i].mIndices[1]);
-      builder.add_vertex_to_facet(mesh_->mFaces[i].mIndices[2]);
-      if (builder.error()) {
-        std::cout << "MeshBuilder SOMETHIG Wrong" << std::endl;
+//      builder.add_vertex_to_facet(mesh_->mFaces[i].mIndices[0]);
+//      builder.add_vertex_to_facet(mesh_->mFaces[i].mIndices[1]);
+//      builder.add_vertex_to_facet(mesh_->mFaces[i].mIndices[2]);
+      for (unsigned int j = 0; j < mesh_->mFaces[i].mNumIndices; j++) {
+               int index = mesh_->mFaces[i].mIndices[j];
+               builder.add_vertex_to_facet(index);
+               if (builder.error())
+                 return;
       }
+
       builder.end_facet();
     }
 

@@ -7,6 +7,7 @@
 
 #include <CameraParser.h>
 #include <EpflParser.h>
+#include <OpenMvgParser.h>
 
 #include <boost/filesystem.hpp>
 #include <iostream>
@@ -36,7 +37,15 @@ bool CameraParser::parseCameras(const boost::filesystem::path &path) {
 
       }
     }else if (boost::filesystem::is_regular_file(path)) {
+      if(boost::filesystem::extension(path) == ".json"){
+        OpenMvgParser omp(path.string());
+        omp.parse();
+        cameras_ = omp.getCameras();
 
+      } else {
+        std::cout << "CameraParser::parseCameras ERROR: path is not a json file" << std::endl;
+        return false;
+      }
     } else {
       std::cout << "CameraParser::parseCameras ERROR: path is not a directory or a regular file" << std::endl;
       return false;

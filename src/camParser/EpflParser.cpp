@@ -36,7 +36,6 @@ int i=0;
     camFile >> curCam.rotation[0][2] >> curCam.rotation[1][2] >> curCam.rotation[2][2];
     camFile >> curCam.center[0] >> curCam.center[1] >> curCam.center[2];
 
-
     curCam.translation = -curCam.center * curCam.rotation;
 
     glm::mat4 tempCameraExtrinsic(0.0);

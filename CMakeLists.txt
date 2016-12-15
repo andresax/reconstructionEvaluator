@@ -20,7 +20,7 @@ endif()
  
 
  
- 
+  
   
 # ----------------------- INCLUDES ----------------------------
 include_directories( 
@@ -29,6 +29,7 @@ include_directories(
                       include/reconstructionEvaluator/
                       include/reconstructionEvaluator/camParser/
                       external/glm/glm/
+                      external/
                       external/assimp/include/assimp
                       ) 
 # ----------------------- GCC FLAGS ----------------------------
