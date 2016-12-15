@@ -11,6 +11,7 @@
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
 
+
 namespace reconstructorEvaluator {
 
 typedef Polyhedron::HalfedgeDS HalfedgeDS;
@@ -27,10 +28,20 @@ void GtComparator::run() {
   importGT();
   importMesh();
 
+  std::cout<<"GtComparator:: writing mesh...";
+  std::cout.flush();
   std::ofstream fileTest1("testMesh.off");
   fileTest1 << meshToBeCompared_;
+  std::cout<<"DONE."<<std::endl;
+
+
+  std::cout<<"GtComparator:: writing mesh gt...";
+  std::cout.flush();
   std::ofstream fileTest2("testGT.off");
   fileTest2 << meshGt_;
+  std::cout<<"DONE."<<std::endl;
+
+  DepthMapFromMesh dmfm(&meshToBeCompared_);
 
 }
 
@@ -38,26 +49,37 @@ void GtComparator::importGT() {
 
   Assimp::Importer importer;
 
-  const aiScene* scene = importer.ReadFile(configuration_.getMeshPath(), aiProcess_Triangulate | aiProcess_JoinIdenticalVertices);
-  //    const aiScene* scene = importer.ReadFile(pFile, aiProcess_Triangulate | aiProcess_JoinIdenticalVertices );
+  std::cout<<"GtComparator::importGT importing...";
+  std::cout.flush();
+  const aiScene* scene = importer.ReadFile(configuration_.getGtPath(), aiProcess_Triangulate | aiProcess_JoinIdenticalVertices);
+  std::cout<<"DONE."<<std::endl;
 
   aiMesh* mesh = scene->mMeshes[0];
 
-  Builder_dae<HalfedgeDS> poly_builder(mesh);
+  std::cout<<"GtComparator::poly_builderGT importing...";
+  std::cout.flush();
+  MeshBuilder<HalfedgeDS> poly_builder(mesh);
   meshGt_.delegate(poly_builder);
+  std::cout<<"DONE."<<std::endl;
+
 }
 
 void GtComparator::importMesh() {
 
   Assimp::Importer importer;
 
-  const aiScene* scene = importer.ReadFile(configuration_.getGtPath(), aiProcess_Triangulate | aiProcess_JoinIdenticalVertices);
-  //    const aiScene* scene = importer.ReadFile(pFile, aiProcess_Triangulate | aiProcess_JoinIdenticalVertices );
+  std::cout<<"GtComparator::importMesh importing...";
+  std::cout.flush();
+  const aiScene* scene = importer.ReadFile(configuration_.getMeshPath(), aiProcess_Triangulate | aiProcess_JoinIdenticalVertices);
+  std::cout<<"DONE."<<std::endl;
 
   aiMesh* mesh = scene->mMeshes[0];
 
-  Builder_dae<HalfedgeDS> poly_builder(mesh);
+  std::cout<<"GtComparator::poly_builder importing...";
+  std::cout.flush();
+  MeshBuilder<HalfedgeDS> poly_builder(mesh);
   meshToBeCompared_.delegate(poly_builder);
+  std::cout<<"DONE."<<std::endl;
 }
 
 } /* namespace reconstructorEvaluator */

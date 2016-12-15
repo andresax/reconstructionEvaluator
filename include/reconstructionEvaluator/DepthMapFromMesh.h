@@ -13,16 +13,22 @@ namespace reconstructorEvaluator {
 
 class DepthMapFromMesh {
 public:
-  DepthMapFromMesh();
+  DepthMapFromMesh(Polyhedron *mesh);
   virtual ~DepthMapFromMesh();
 
-  void setMeshGt(const Polyhedron*& mesh) {
+  void setMeshGt(Polyhedron*& mesh) {
     mesh_ = mesh;
   }
 
+  void computeMap(const CameraType &cam);
+
 private:
 
+  void computeRayFromCurCam(const float & x, const float &y, glm::vec3 &ray);
+  void intersectRayMesh(const glm::vec3 &ray, glm::vec3 &intersection);
+
   Polyhedron *mesh_;
+  CameraType curCam;
 };
 
 } /* namespace reconstructorEvaluator */

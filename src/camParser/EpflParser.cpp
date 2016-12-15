@@ -52,6 +52,7 @@ int i=0;
     tempCameraExtrinsic[0][3] = curCam.translation[0];
     tempCameraExtrinsic[1][3] = curCam.translation[1];
     tempCameraExtrinsic[2][3] = curCam.translation[2];
+    curCam.extrinsics = tempCameraExtrinsic;
     glm::mat4 tempCameraIntrinsicH(0.0);
     tempCameraIntrinsicH[0][0] = curCam.intrinsics[0][0];
     tempCameraIntrinsicH[0][1] = curCam.intrinsics[0][1];

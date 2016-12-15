@@ -50,9 +50,6 @@ void Configuration::parse() {
     std::cout << "Configuration::parse ERROR parsing whichCams" << std::endl;
   }
 
-  for(auto i:camerasIdx_){
-    std::cout << i<<std::endl;
-  }
   utilities::readLineAndStore(file_, camerasGT);
 
 }

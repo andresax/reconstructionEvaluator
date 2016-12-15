@@ -14,6 +14,7 @@
 
 struct CameraType {
   glm::mat3 intrinsics;
+  glm::mat4 extrinsics;
   glm::mat3 rotation;
   glm::vec3 translation;
   glm::mat4 cameraMatrix;
