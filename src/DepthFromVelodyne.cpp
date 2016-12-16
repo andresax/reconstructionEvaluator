@@ -68,7 +68,7 @@ void DepthFromVelodyne::loadCalib() {
   }
 
   std::stringstream ss;
-  glm::mat4 tr = glm::mat4(0.0);
+  tr = glm::mat4(0.0);
   std::getline(input, line);
   ss << line;
   ss >> dummy;
@@ -102,21 +102,20 @@ void DepthFromVelodyne::createDepthFromIdx(int idx) {
     input.read((char *) &dummy, sizeof(float));
     glm::vec4 pt3d = glm::vec4(point[0], point[1], point[2], 1.0);
 
-    glm::mat4 mm = tr * P[0];
-    glm::vec4 pt2dH = pt3d * mm;
+
+    glm::vec4 pt2dH = pt3d * tr * P[0];
 
     glm::vec2 pt2d = glm::vec2(pt2dH.x / pt2dH.z, pt2dH.y / pt2dH.z);
 
     float distance = glm::length(glm::vec3(point[0], point[1], point[2]));
 
-    std::cout<<distance<<std::endl;
     int idX = static_cast<int>(pt2d.x);
     int idY = static_cast<int>(pt2d.y);
-    if (0 < idX && idX < imageWidth_ && //
-        0 < idY && idY < imageHeight_ && //
-        distance > 0.0 && (distance < depth(idX, idX) || depth(idX, idX) < 0.0)) {
 
-      depth(idY, idX) = distance;
+    if (0 < idX && idX < imageWidth_ && //
+        0 < idY && idY < imageHeight_ &&//
+        distance > 0.0 && (distance < depth(idX, idY) || depth(idX, idY) < 0.0)) {
+      depth(idX, idY) = distance;
     }
 
   }
