@@ -16,6 +16,23 @@ void readLineAndStore(std::ifstream &configFile, bool &value) {
   }
 }
 
+std::string getFrameNumber(int curFrame, int digitIdxLength) {
+  std::ostringstream curNumber;
+  if (digitIdxLength > 0) {
+    int n = curFrame;
+    int curNumOfDigit = curFrame == 0 ? 1 : 0;
+    while (n > 0) {
+      n /= 10;
+      ++curNumOfDigit;
+    }
+    while (curNumOfDigit < digitIdxLength) {
+      curNumber << "0";
+      curNumOfDigit++;
+    }
+  }
+  curNumber << curFrame;
+  return curNumber.str();
+}
 void readLineAndStore(std::ifstream &configFile, int &value) {
   std::string line;
   std::getline(configFile, line);

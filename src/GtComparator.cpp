@@ -10,6 +10,8 @@
 #include <assimp/Importer.hpp>  // OO version Header!
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
+#include <DepthMapFromMesh.h>
+#include <DepthFromVelodyne.h>
 
 
 namespace reconstructorEvaluator {
@@ -26,7 +28,9 @@ GtComparator::~GtComparator() {
 
 void GtComparator::run() {
   //importGT();
-  importMesh();
+  //importMesh();
+  std::ifstream file(configuration_.getMeshPath());
+  file >> meshToBeCompared_;
 
   std::cout<<"GtComparator:: writing mesh...";
   std::cout.flush();
@@ -41,8 +45,10 @@ void GtComparator::run() {
 //  fileTest2 << meshGt_;
 //  std::cout<<"DONE."<<std::endl;
 
-  DepthMapFromMesh dmfm(&meshToBeCompared_);
+//  DepthMapFromMesh dmfm(&meshToBeCompared_);
+  DepthFromVelodyne frv(configuration_.getGtPath(), configuration_.getCameras()[0].imageHeight, configuration_.getCameras()[0].imageWidth);
 
+  frv.createDepthFromIdx(0);
 }
 
 void GtComparator::importGT() {

@@ -12,7 +12,6 @@
 #include <vector>
 #include <types.hpp>
 #include <Configuration.h>
-#include <DepthMapFromMesh.h>
 
 namespace reconstructorEvaluator {
 

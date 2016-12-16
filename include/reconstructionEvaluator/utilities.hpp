@@ -19,6 +19,7 @@ void readLineAndStore(std::ifstream &configFile, double &value);
 void readLineAndStore(std::ifstream &configFile, float &value);
 void readLineAndStore(std::ifstream &configFile, std::string &value);
 void readLineAndStore(std::ifstream &configFile, boost::filesystem::path &value);
+std::string getFrameNumber(int curFrame, int digitIdxLength) ;
 void printMatrix(glm::mat4 matrix);
 void printMatrix(std::string message, glm::mat4 matrix);
 void printMatrix(glm::mat3 matrix);
