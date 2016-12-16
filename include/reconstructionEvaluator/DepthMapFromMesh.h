@@ -9,6 +9,7 @@
 #define SRC_DEPTHMAPFROMMESH_H_
 
 #include <types.hpp>
+#include <CImg/CImg.h>
 namespace reconstructorEvaluator {
 
 class DepthMapFromMesh {

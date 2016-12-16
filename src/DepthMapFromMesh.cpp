@@ -23,7 +23,6 @@ typedef Kernel::Vector_3 Vector;
 typedef Kernel::FT FT;
 typedef Kernel::Segment_3 Segment;
 
-
 typedef CGAL::Polyhedron_3<Kernel> Polyhedron;
 typedef CGAL::AABB_face_graph_triangle_primitive<Polyhedron> Primitive;
 typedef CGAL::AABB_traits<Kernel, Primitive> Traits;
@@ -44,23 +43,35 @@ void DepthMapFromMesh::computeMap(const CameraType& cam) {
 
   Tree tree(faces(*mesh_).first, faces(*mesh_).second, *mesh_);
 
-  std::cerr << "done" << std::endl;
+  cimg_library::CImg<float> depth(cam.imageWidth, cam.imageHeight);
+  depth.fill(-1.0);
   for (int row = 0; row < cam.imageWidth; ++row) {
     for (int col = 0; col < cam.imageHeight; ++col) {
-      computeRayFromCurCam(col, row, curRay);
+      computeRayFromCurCam(row, col, curRay);
       Ray ray(Point(cam.center.x, cam.center.y, cam.center.z), Vector(curRay.x, curRay.y, curRay.z));
-      Segment seg(Point(cam.center.x, cam.center.y, cam.center.z), Point(cam.center.x, cam.center.y, cam.center.z)+2000.0*Vector(curRay.x, curRay.y, curRay.z));
+      //Segment seg(Point(cam.center.x, cam.center.y, cam.center.z), Point(cam.center.x, cam.center.y, cam.center.z)+2000.0*Vector(curRay.x, curRay.y, curRay.z));
       Ray_intersection intersection = tree.any_intersection(ray);
-      if(intersection)
-      {
-          // gets intersection object
+      if (intersection) {
+        // gets intersection object
         const Point* p = boost::get<Point>(&(intersection->first));
-        if(p)
-          std::cout << "intersection object is a point " << *p << std::endl;
+        if (p) {
+          float distance = glm::length(cam.center - glm::vec3(p->x(), p->y(), p->z()));
+
+
+          if (distance > 0.0 && (distance < depth(row, col) || depth(row, col) < 0.0)) {
+            depth(row, col) = distance;
+          }
+          //std::cout << "intersection object is a point " << *p << std::endl;
+        }
+
       }
 
     }
   }
+  depth.save_ascii("depthMesh.txt");
+
+  depth.normalize(0,255);
+  depth.save_png("depthMesh.png");
 
 }
 

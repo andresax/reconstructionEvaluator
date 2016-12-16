@@ -46,6 +46,7 @@ void GtComparator::run() {
 //  std::cout<<"DONE."<<std::endl;
 
   DepthMapFromMesh dmfm(&meshToBeCompared_);
+  dmfm.computeMap(configuration_.getCameras()[0]);
   DepthFromVelodyne frv(configuration_.getGtPath(), configuration_.getCameras()[0].imageHeight, configuration_.getCameras()[0].imageWidth);
 
   frv.createDepthFromIdx(0);
