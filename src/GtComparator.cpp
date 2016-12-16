@@ -13,7 +13,6 @@
 #include <DepthMapFromMesh.h>
 #include <DepthFromVelodyne.h>
 
-
 namespace reconstructorEvaluator {
 
 typedef Polyhedron::HalfedgeDS HalfedgeDS;
@@ -32,12 +31,11 @@ void GtComparator::run() {
   std::ifstream file(configuration_.getMeshPath());
   file >> meshToBeCompared_;
 
-  std::cout<<"GtComparator:: writing mesh...";
+  std::cout << "GtComparator:: writing mesh...";
   std::cout.flush();
   std::ofstream fileTest1("testMesh.off");
   fileTest1 << meshToBeCompared_;
-  std::cout<<"DONE."<<std::endl;
-
+  std::cout << "DONE." << std::endl;
 
 //  std::cout<<"GtComparator:: writing mesh gt...";
 //  std::cout.flush();
@@ -50,24 +48,27 @@ void GtComparator::run() {
   DepthFromVelodyne frv(configuration_.getGtPath(), configuration_.getCameras()[0].imageHeight, configuration_.getCameras()[0].imageWidth);
 
   frv.createDepthFromIdx(0);
+
+  compareDepthMaps(frv.getDepth(), dmfm.getDepth());
+  printComparison();
 }
 
 void GtComparator::importGT() {
 
   Assimp::Importer importer;
 
-  std::cout<<"GtComparator::importGT importing...";
+  std::cout << "GtComparator::importGT importing...";
   std::cout.flush();
   const aiScene* scene = importer.ReadFile(configuration_.getGtPath(), aiProcess_Triangulate | aiProcess_JoinIdenticalVertices);
-  std::cout<<"DONE."<<std::endl;
+  std::cout << "DONE." << std::endl;
 
   aiMesh* mesh = scene->mMeshes[0];
 
-  std::cout<<"GtComparator::poly_builderGT importing...";
+  std::cout << "GtComparator::poly_builderGT importing...";
   std::cout.flush();
   MeshBuilder<HalfedgeDS> poly_builder(mesh);
   meshGt_.delegate(poly_builder);
-  std::cout<<"DONE."<<std::endl;
+  std::cout << "DONE." << std::endl;
 
 }
 
@@ -75,18 +76,83 @@ void GtComparator::importMesh() {
 
   Assimp::Importer importer;
 
-  std::cout<<"GtComparator::importMesh importing...";
+  std::cout << "GtComparator::importMesh importing...";
   std::cout.flush();
   const aiScene* scene = importer.ReadFile(configuration_.getMeshPath(), aiProcess_Triangulate | aiProcess_JoinIdenticalVertices);
-  std::cout<<"DONE."<<std::endl;
+  std::cout << "DONE." << std::endl;
 
   aiMesh* mesh = scene->mMeshes[0];
 
-  std::cout<<"GtComparator::poly_builder importing...";
+  std::cout << "GtComparator::poly_builder importing...";
   std::cout.flush();
   MeshBuilder<HalfedgeDS> poly_builder(mesh);
   meshToBeCompared_.delegate(poly_builder);
-  std::cout<<"DONE."<<std::endl;
+  std::cout << "DONE." << std::endl;
+}
+
+void GtComparator::compareDepthMaps(const cimg_library::CImg<float>& depthGT, const cimg_library::CImg<float>& depth) {
+
+  if (depthGT._width != depth._width || depthGT._height != depth._height) {
+    std::cout << " compareDepthMaps error the two depth maps have different dimensions" << std::endl;
+    return;
+  }
+
+  for (int x = 0; x < depthGT._width; ++x) {
+    for (int y = 0; y < depthGT._height; ++y) {
+      if (depth(x, y) > 0.0 && depthGT(x, y) > 0.0)
+        res.errs_.push_back(depth(x, y) - depthGT(x, y));
+    }
+  }
+
+  float sum = std::accumulate(res.errs_.begin(), res.errs_.end(), 0.0);
+
+  std::vector<float> sqrVec;
+  std::transform(res.errs_.begin(), res.errs_.end(), std::back_inserter(sqrVec), [](int n) {return std::pow(n,2);});
+  float sumSqr = std::accumulate(res.errs_.begin(), res.errs_.end(), 0.0);
+  std::vector<float> absVec;
+  std::transform(res.errs_.begin(), res.errs_.end(), std::back_inserter(absVec), [](int n) {return std::fabs(n);});
+  float sumAbs = std::accumulate(res.errs_.begin(), res.errs_.end(), 0.0);
+
+  res.mean = sum / res.errs_.size();
+  res.rmse = std::sqrt(sumSqr) / res.errs_.size();
+  res.mae = sumAbs / res.errs_.size();
+
+  std::vector<double> diff(res.errs_.size());
+  std::transform(res.errs_.begin(), res.errs_.end(), diff.begin(), std::bind2nd(std::minus<double>(), res.mean));
+  double sq_sum = std::inner_product(diff.begin(), diff.end(), diff.begin(), 0.0);
+  res.stddev = std::sqrt(sq_sum / res.errs_.size());
+}
+
+void GtComparator::printComparison() {
+
+  std::cout << "Error statistics: " << std::cout;
+  std::cout << "mean: " << res.mean << " stddev: " << res.stddev << std::cout;
+  std::cout << "RMSE: " << res.rmse << " mae: " << res.mae << std::cout;
+
+  const float bucket_size = 0.05;
+  int number_of_buckets = (int) ceil(1 / bucket_size); // requires <cmath>
+  std::vector<int> histError(number_of_buckets);
+
+  for (auto e : res.errs_) {
+    int bucket = (int) floor(e / bucket_size);
+    histError[bucket] += 1;
+  }
+
+  int totNum = std::accumulate(histError.begin(), histError.end(), 0);
+
+  std::cout << "Errors histogram (%): " << std::endl;
+  for (auto c : histError) {
+    std::cout << setfill(' ') << setw(10) << std::fixed << std::setprecision(1);
+    std::cout << 100.0 * static_cast<float>(c) / totNum << " ";
+  }
+  std::cout << std::endl;
+  std::cout << "Errors histogram: (num)" << std::endl;
+  for (auto c : histError) {
+    std::cout << setfill(' ') << setw(10) << std::fixed << std::setprecision(1);
+    std::cout << c << " ";
+  }
+  std::cout << std::endl;
+
 }
 
 } /* namespace reconstructorEvaluator */

@@ -23,6 +23,10 @@ public:
 
   void computeMap(const CameraType &cam);
 
+  const cimg_library::CImg<float>& getDepth() const {
+    return depth;
+  }
+
 private:
 
   void computeRayFromCurCam(const float & x, const float &y, glm::vec3 &ray);
@@ -30,6 +34,7 @@ private:
 
   Polyhedron *mesh_;
   CameraType curCam;
+  cimg_library::CImg<float> depth;
 };
 
 } /* namespace reconstructorEvaluator */

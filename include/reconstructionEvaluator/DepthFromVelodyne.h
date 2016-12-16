@@ -20,12 +20,17 @@ public:
 
   void createDepthFromIdx(int idx);
 
+  const cimg_library::CImg<float>& getDepth() const {
+    return depth;
+  }
+
 private:
   std::string pathBase_;
   std::vector<glm::mat4> P;
   glm::mat4 tr;
   int imageHeight_;
   int imageWidth_;
+  cimg_library::CImg<float> depth;
 
   void loadCalib();
 };

@@ -12,6 +12,7 @@
 #include <vector>
 #include <types.hpp>
 #include <Configuration.h>
+#include <CImg/CImg.h>
 
 namespace reconstructorEvaluator {
 
@@ -23,10 +24,13 @@ public:
 private:
   void importGT();
   void importMesh();
+  void compareDepthMaps(const cimg_library::CImg<float> &depthGT, const cimg_library::CImg<float> &depth);
+  void printComparison();
   Configuration configuration_;
 
   Polyhedron meshGt_;
   Polyhedron meshToBeCompared_;
+  ComparisonResults res;
 };
 
 } /* namespace reconstructorEvaluator */

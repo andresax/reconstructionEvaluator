@@ -93,7 +93,7 @@ void DepthFromVelodyne::createDepthFromIdx(int idx) {
   std::string filename(pathBase_ + "/velodyne/" + utilities::getFrameNumber(idx, 6) + ".bin");
   std::ifstream input(filename, std::ios::in | std::ios::binary);
 
-  cimg_library::CImg<float> depth(imageWidth_, imageHeight_);
+  depth = cimg_library::CImg<float>(imageWidth_, imageHeight_);
   depth.fill(-1.0);
   while (input.good() && !input.eof()) {
     float dummy;
@@ -101,7 +101,6 @@ void DepthFromVelodyne::createDepthFromIdx(int idx) {
     input.read((char *) point, 3 * sizeof(float));
     input.read((char *) &dummy, sizeof(float));
     glm::vec4 pt3d = glm::vec4(point[0], point[1], point[2], 1.0);
-
 
     glm::vec4 pt2dH = pt3d * tr * P[0];
 
@@ -113,7 +112,7 @@ void DepthFromVelodyne::createDepthFromIdx(int idx) {
     int idY = static_cast<int>(pt2d.y);
 
     if (0 < idX && idX < imageWidth_ && //
-        0 < idY && idY < imageHeight_ &&//
+        0 < idY && idY < imageHeight_ && //
         distance > 0.0 && (distance < depth(idX, idY) || depth(idX, idY) < 0.0)) {
       depth(idX, idY) = distance;
     }

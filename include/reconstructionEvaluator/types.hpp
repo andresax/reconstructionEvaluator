@@ -11,6 +11,7 @@
 #include <glm.hpp>
 #include <CGAL/Simple_cartesian.h>
 #include <CGAL/Polyhedron_3.h>
+#include <CImg/CImg.h>
 
 struct CameraType {
   glm::mat3 intrinsics;
@@ -23,6 +24,18 @@ struct CameraType {
 
   int imageWidth;
   int imageHeight;
+};
+
+struct ComparisonResults{
+  float mean;
+  float stddev;
+  float mae;
+  float rmse;
+
+  std::vector<float> errs_;
+  std::vector<cimg_library::CImg<float>> mapsErr;
+
+
 };
 
 typedef CGAL::Simple_cartesian<double> Kernel;

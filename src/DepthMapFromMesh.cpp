@@ -43,7 +43,7 @@ void DepthMapFromMesh::computeMap(const CameraType& cam) {
 
   Tree tree(faces(*mesh_).first, faces(*mesh_).second, *mesh_);
 
-  cimg_library::CImg<float> depth(cam.imageWidth, cam.imageHeight);
+  depth = cimg_library::CImg<float>(cam.imageWidth, cam.imageHeight);
   depth.fill(-1.0);
   for (int row = 0; row < cam.imageWidth; ++row) {
     for (int col = 0; col < cam.imageHeight; ++col) {
@@ -57,7 +57,6 @@ void DepthMapFromMesh::computeMap(const CameraType& cam) {
         if (p) {
           float distance = glm::length(cam.center - glm::vec3(p->x(), p->y(), p->z()));
 
-
           if (distance > 0.0 && (distance < depth(row, col) || depth(row, col) < 0.0)) {
             depth(row, col) = distance;
           }
@@ -70,7 +69,7 @@ void DepthMapFromMesh::computeMap(const CameraType& cam) {
   }
   depth.save_ascii("depthMesh.txt");
 
-  depth.normalize(0,255);
+  depth.normalize(0, 255);
   depth.save_png("depthMesh.png");
 
 }
