@@ -1251,8 +1251,9 @@ private:
             }
 
             bool expMinus = false;
-            if (Consume(s, '+')){
-            }else if (Consume(s, '-'))
+            if (Consume(s, '+'))
+                ;
+            else if (Consume(s, '-'))
                 expMinus = true;
 
             if (RAPIDJSON_LIKELY(s.Peek() >= '0' && s.Peek() <= '9')) {

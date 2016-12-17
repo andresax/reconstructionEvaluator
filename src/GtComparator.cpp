@@ -125,18 +125,23 @@ void GtComparator::compareDepthMaps(const cimg_library::CImg<float>& depthGT, co
 
 void GtComparator::printComparison() {
 
-  std::cout << "Error statistics: " << std::cout;
-  std::cout << "mean: " << res.mean << " stddev: " << res.stddev << std::cout;
-  std::cout << "RMSE: " << res.rmse << " mae: " << res.mae << std::cout;
+  std::cout << "Error statistics: " << std::endl;
+  std::cout << "mean: " << res.mean << " stddev: " << res.stddev << std::endl;
+  std::cout << "RMSE: " << res.rmse << " mae: " << res.mae << std::endl;
 
-  const float bucket_size = 0.05;
-  int number_of_buckets = (int) ceil(1 / bucket_size); // requires <cmath>
-  std::vector<int> histError(number_of_buckets);
+
+  float maxEl = *std::max_element(res.errs_.begin(), res.errs_.end());
+  float minEl = *std::min_element(res.errs_.begin(), res.errs_.end());
+  const float binSize = 10.0;
+  int numBin = (int) ceil((maxEl-minEl)/ binSize); // requires <cmath>
+ std::vector<int> histError(numBin,0);
 
   for (auto e : res.errs_) {
-    int bucket = (int) floor(e / bucket_size);
-    histError[bucket] += 1;
+    int bucket = (int) floor(fabs(e) / binSize);
+
+    histError[bucket<numBin?bucket:numBin-1] += 1;
   }
+
 
   int totNum = std::accumulate(histError.begin(), histError.end(), 0);
 

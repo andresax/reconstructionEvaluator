@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 #include <glm.hpp>
+#include <CImg/CImg.h>
 
 namespace reconstructorEvaluator {
 

@@ -11,7 +11,7 @@
 #include <glm.hpp>
 #include <CGAL/Simple_cartesian.h>
 #include <CGAL/Polyhedron_3.h>
-#include <CImg/CImg.h>
+//#include <CImg/CImg.h>
 
 struct CameraType {
   glm::mat3 intrinsics;
@@ -33,7 +33,7 @@ struct ComparisonResults{
   float rmse;
 
   std::vector<float> errs_;
-  std::vector<cimg_library::CImg<float>> mapsErr;
+  //std::vector<cimg_library::CImg<float>> mapsErr;
 
 
 };
