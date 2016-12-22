@@ -38,6 +38,7 @@ void Configuration::parse() {
   std::string camerasGT;
 
   utilities::readLineAndStore(file_, gtPath_);
+  cameraParser.setPathBaseGt(gtPath_);
   utilities::readLineAndStore(file_, meshPath_);
   utilities::readLineAndStore(file_, cameraPoses);
   if (!cameraParser.parseCameras(cameraPoses)) {
@@ -49,8 +50,15 @@ void Configuration::parse() {
   if (!parseWhichCams(whichCams)) {
     std::cout << "Configuration::parse ERROR parsing whichCams" << std::endl;
   }
-
+  cameraParser.reset();
   utilities::readLineAndStore(file_, camerasGT);
+  if (camerasGT != "") {
+    if (!cameraParser.parseCameras(camerasGT)) {
+      std::cout << "Configuration::parse ERROR parsing cameras" << std::endl;
+    } else {
+      camerasGt_ = cameraParser.getCameras();
+    }
+  }
 
 }
 

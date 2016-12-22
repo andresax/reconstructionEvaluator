@@ -12,14 +12,15 @@
 #include <utilities.hpp>
 
 namespace reconstructorEvaluator {
-OpenMvgParser::OpenMvgParser(std::string path) {
-  fileStream_.open(path.c_str());
+OpenMvgParser::OpenMvgParser() {
 }
 
 OpenMvgParser::~OpenMvgParser() {
+
 }
 
-void OpenMvgParser::parse() {
+void OpenMvgParser::parse(const boost::filesystem::path &path) {
+  fileStream_.open(path.string().c_str());
   std::string str((std::istreambuf_iterator<char>(fileStream_)), std::istreambuf_iterator<char>());
   document_.Parse(str.c_str());
 
@@ -62,15 +63,13 @@ void OpenMvgParser::parseViews(const std::map<int, glm::mat3> & intrinsics, cons
       int idIntrinsics = camerasJson[curCam]["value"]["ptr_wrapper"]["data"]["id_intrinsic"].GetInt();
       int idExtrinsics = camerasJson[curCam]["value"]["ptr_wrapper"]["data"]["id_pose"].GetInt();
 
-
       try {
-
 
         cameras_[curCam] = extrinsics.at(idExtrinsics);
         cameras_[curCam].distortion_coeff = distortion.at(idIntrinsics);
         cameras_[curCam].intrinsics = intrinsics.at(idIntrinsics);
-      cameras_[curCam].imageWidth = camerasJson[curCam]["value"]["ptr_wrapper"]["data"]["width"].GetInt();
-      cameras_[curCam].imageHeight = camerasJson[curCam]["value"]["ptr_wrapper"]["data"]["height"].GetInt();
+        cameras_[curCam].imageWidth = camerasJson[curCam]["value"]["ptr_wrapper"]["data"]["width"].GetInt();
+        cameras_[curCam].imageHeight = camerasJson[curCam]["value"]["ptr_wrapper"]["data"]["height"].GetInt();
 
         glm::mat4 eMatrix(0.0), kMatrix(0.0);
         for (int curR = 0; curR < 3; curR++) {
@@ -83,8 +82,6 @@ void OpenMvgParser::parseViews(const std::map<int, glm::mat3> & intrinsics, cons
         eMatrix[2][3] = cameras_[curCam].translation[2];
         eMatrix[3][3] = 1.0;
 
-
-
         for (int curR = 0; curR < 3; curR++) {
           for (int curC = 0; curC < 3; curC++) {
             kMatrix[curR][curC] = cameras_[curCam].intrinsics[curR][curC];
@@ -92,6 +89,7 @@ void OpenMvgParser::parseViews(const std::map<int, glm::mat3> & intrinsics, cons
         }
 
         cameras_[curCam].cameraMatrix = eMatrix * kMatrix;
+        cameras_[curCam].extrinsics = eMatrix;
 
 //        std::cout << "curCam: " << curCam << std::endl;
 //        utilities::printMatrix("Intrinsics A", kMatrix);

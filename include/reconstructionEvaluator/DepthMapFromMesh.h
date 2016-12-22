@@ -12,6 +12,7 @@
 #include <CImg/CImg.h>
 namespace reconstructorEvaluator {
 
+typedef Kernel::Ray_3 Ray;
 class DepthMapFromMesh {
 public:
   DepthMapFromMesh(Polyhedron *mesh);
@@ -30,7 +31,8 @@ public:
 private:
 
   void computeRayFromCurCam(const float & x, const float &y, glm::vec3 &ray);
-  void intersectRayMesh(const glm::vec3 &ray, glm::vec3 &intersection);
+
+  void printRays(const std::vector<Ray> &rays);
 
   Polyhedron *mesh_;
   CameraType curCam;

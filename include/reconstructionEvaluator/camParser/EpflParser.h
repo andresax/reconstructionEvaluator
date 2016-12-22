@@ -9,10 +9,11 @@
 #define SRC_CAMPARSER_EPFLPARSER_H_
 
 #include <boost/filesystem.hpp>
+#include <ParserInterface.hpp>
 #include <types.hpp>
 namespace reconstructorEvaluator {
 
-class EpflParser {
+class EpflParser : ParserInterface {
 public:
   EpflParser();
   virtual ~EpflParser();
@@ -24,9 +25,8 @@ public:
   }
 
 private:
- void orderPaths(const boost::filesystem::path &path);
- std::vector<boost::filesystem::path> cameraPaths_;
- std::vector<CameraType> cameras_;
+  void orderPaths(const boost::filesystem::path &path);
+  std::vector<boost::filesystem::path> cameraPaths_;
 };
 
 } /* namespace reconstructorEvaluator */

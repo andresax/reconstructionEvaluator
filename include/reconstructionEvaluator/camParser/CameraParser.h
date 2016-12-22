@@ -17,13 +17,20 @@ public:
   CameraParser();
   virtual ~CameraParser();
   bool parseCameras(const boost::filesystem::path &path);
+  void reset();
 
   const std::vector<CameraType>& getCameras() const {
     return cameras_;
   }
+
+  void setPathBaseGt(const boost::filesystem::path& pathBaseGt) {
+    pathBaseGt_ = pathBaseGt;
+  }
+
 private:
 
   std::vector<CameraType> cameras_;
+  boost::filesystem::path pathBaseGt_;
 
 };
 

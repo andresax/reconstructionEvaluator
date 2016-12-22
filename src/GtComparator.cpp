@@ -44,10 +44,10 @@ void GtComparator::run() {
 //  std::cout<<"DONE."<<std::endl;
 
   DepthMapFromMesh dmfm(&meshToBeCompared_);
-  dmfm.computeMap(configuration_.getCameras()[0]);
+  dmfm.computeMap(configuration_.getCameras()[10]);
   DepthFromVelodyne frv(configuration_.getGtPath(), configuration_.getCameras()[0].imageHeight, configuration_.getCameras()[0].imageWidth);
 
-  frv.createDepthFromIdx(0);
+  frv.createDepthFromIdx(10);
 
   compareDepthMaps(frv.getDepth(), dmfm.getDepth());
   printComparison();
@@ -129,19 +129,17 @@ void GtComparator::printComparison() {
   std::cout << "mean: " << res.mean << " stddev: " << res.stddev << std::endl;
   std::cout << "RMSE: " << res.rmse << " mae: " << res.mae << std::endl;
 
-
   float maxEl = *std::max_element(res.errs_.begin(), res.errs_.end());
   float minEl = *std::min_element(res.errs_.begin(), res.errs_.end());
   const float binSize = 10.0;
-  int numBin = (int) ceil((maxEl-minEl)/ binSize); // requires <cmath>
- std::vector<int> histError(numBin,0);
+  int numBin = (int) ceil((maxEl - minEl) / binSize); // requires <cmath>
+  std::vector<int> histError(numBin, 0);
 
   for (auto e : res.errs_) {
     int bucket = (int) floor(fabs(e) / binSize);
 
-    histError[bucket<numBin?bucket:numBin-1] += 1;
+    histError[bucket < numBin ? bucket : numBin - 1] += 1;
   }
-
 
   int totNum = std::accumulate(histError.begin(), histError.end(), 0);
 

@@ -22,7 +22,7 @@ EpflParser::~EpflParser() {
 
 void EpflParser::parse(const boost::filesystem::path& path) {
   orderPaths(path);
-int i=0;
+  int i = 0;
   for (auto camPath : cameraPaths_) {
     CameraType curCam;
     std::ifstream camFile(camPath.string());

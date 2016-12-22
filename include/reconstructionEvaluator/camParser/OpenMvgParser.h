@@ -14,27 +14,26 @@
 #include <map>
 #include <types.hpp>
 #include <rapidjson/document.h>
+#include <ParserInterface.hpp>
 
 
 
 namespace reconstructorEvaluator {
-class OpenMvgParser {
+class OpenMvgParser : ParserInterface{
 public:
-  OpenMvgParser(std::string path);
   OpenMvgParser();
   virtual ~OpenMvgParser();
-
-  void parse();
 
   void setFileName(const std::string& fileName) {
     fileName_ = fileName;
     fileStream_.open(fileName_.c_str());
   }
 
+  void parse(const boost::filesystem::path &path);
+
   const std::vector<CameraType>& getCameras() const {
     return cameras_;
   }
-
 private:
   void parseViews(const std::map<int,glm::mat3> & intrinsics, const std::map<int, glm::vec3> &distortion, const std::map<int,CameraType> & extrinsics);
   void parseIntrinsics(std::map<int,glm::mat3> & intrinsics, std::map<int, glm::vec3> &distortion);
@@ -43,7 +42,6 @@ private:
   rapidjson::Document document_;
   std::string fileName_;
   std::ifstream fileStream_;
-  std::vector<CameraType> cameras_;
 
 };
 }

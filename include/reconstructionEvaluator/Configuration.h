@@ -46,6 +46,7 @@ private:
   std::string meshPath_;
   std::string gtPath_;
   std::vector<CameraType> cameras_;
+  std::vector<CameraType> camerasGt_;
   std::vector<int> camerasIdx_;
 
 };

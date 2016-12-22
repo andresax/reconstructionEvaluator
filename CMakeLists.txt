@@ -21,7 +21,7 @@ endif()
   FIND_PACKAGE(X11)
   FIND_PACKAGE(Threads REQUIRED)
 
- 
+  
   link_directories(${X11_LIB_DIRS})
   
   
@@ -34,6 +34,7 @@ include_directories(
                       include/reconstructionEvaluator/camParser/
                       external/glm/glm/
                       external/
+                      external/eigen
                       external/assimp/include/assimp
                       ) 
 # ----------------------- GCC FLAGS ----------------------------
