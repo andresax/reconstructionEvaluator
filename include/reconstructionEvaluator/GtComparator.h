@@ -13,6 +13,8 @@
 #include <types.hpp>
 #include <Configuration.h>
 #include <CImg/CImg.h>
+#undef Success
+#include <Eigen/Core>
 
 namespace reconstructorEvaluator {
 
@@ -24,6 +26,8 @@ public:
 private:
   void importGT();
   void importMesh();
+  void registerCameras();
+  void estimateScale();
   void compareDepthMaps(const cimg_library::CImg<float> &depthGT, const cimg_library::CImg<float> &depth);
   void printComparison();
   Configuration configuration_;
@@ -31,6 +35,8 @@ private:
   Polyhedron meshGt_;
   Polyhedron meshToBeCompared_;
   ComparisonResults res;
+  Eigen::Matrix4f rotoTr_;
+
 };
 
 } /* namespace reconstructorEvaluator */

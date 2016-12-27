@@ -39,6 +39,10 @@ public:
     return gtPath_;
   }
 
+  const std::vector<CameraType>& getCamerasGt() const {
+    return camerasGt_;
+  }
+
 private:
   std::ifstream file_;
   bool parseWhichCams(const std::string &path);

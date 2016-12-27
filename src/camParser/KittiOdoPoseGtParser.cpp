@@ -22,12 +22,13 @@ void KittiOdoPoseGtParser::parse(const boost::filesystem::path& path) {
   std::ifstream fileIn(path.string());
   std::cout<<"reading: "<<path.string()<<std::endl;
   CameraType curCam;
+  glm::mat4 temp;
   while (!fileIn.eof()) {
     bool err = false;
     for (int row = 0; row < 3; row++) {
       for (int col = 0; col < 4; col++) {
         if (!(fileIn.eof())) {
-          fileIn >> curCam.extrinsics[row][col];
+          fileIn >> temp[row][col];
 //          std::cout << curCam.extrinsics[row][col] << " ";
         }
       }
@@ -36,13 +37,18 @@ void KittiOdoPoseGtParser::parse(const boost::filesystem::path& path) {
     if (!err) {
       for (int row = 0; row < 3; row++) {
         for (int col = 0; col < 3; col++) {
-          curCam.rotation[row][col] = curCam.extrinsics[row][col];
+          curCam.rotation[row][col] = temp[col][row];
+          curCam.extrinsics[row][col] = curCam.rotation[row][col];
         }
       }
       for (int row = 0; row < 3; row++) {
-        curCam.translation[row] = curCam.extrinsics[row][3];
+        curCam.center[row] = temp[row][3];
       }
-      curCam.center = -curCam.translation * glm::transpose(curCam.rotation);
+      curCam.translation = -curCam.translation * (curCam.rotation);
+
+      for (int row = 0; row < 3; row++) {
+        curCam.extrinsics[row][3] = curCam.translation[row];
+      }
 
       for (int row = 0; row < 3; row++) {
         for (int col = 0; col < 3; col++) {

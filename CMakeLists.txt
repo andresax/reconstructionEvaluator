@@ -25,7 +25,7 @@ endif()
   link_directories(${X11_LIB_DIRS})
   
   
-  include_directories(${X11_INCLUDE_DIR})
+  include_directories(${X11_INCLUDE_DIR} )
 # ----------------------- INCLUDES ----------------------------
 include_directories( 
                       ${OpenCV_INCLUDE_DIRS} 
