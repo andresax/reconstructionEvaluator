@@ -43,6 +43,14 @@ public:
     return camerasGt_;
   }
 
+  const int & getInitFrame() const {
+    return initFrame_;
+  }
+
+  const int& getLastFrame() const {
+    return lastFrame_;
+  }
+
 private:
   std::ifstream file_;
   bool parseWhichCams(const std::string &path);
@@ -52,6 +60,8 @@ private:
   std::vector<CameraType> cameras_;
   std::vector<CameraType> camerasGt_;
   std::vector<int> camerasIdx_;
+  int initFrame_;
+  int lastFrame_;
 
 };
 

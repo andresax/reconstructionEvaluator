@@ -22,6 +22,7 @@ typedef Polyhedron::HalfedgeDS HalfedgeDS;
 GtComparator::GtComparator(const std::string& path) {
   configuration_.setConfiguration(path);
   configuration_.parse();
+  scale = 1.0;
 }
 
 GtComparator::~GtComparator() {
@@ -48,11 +49,15 @@ void GtComparator::run() {
 //  fileTest2 << meshGt_;
 //  std::cout<<"DONE."<<std::endl;
 
-  DepthMapFromMesh dmfm(&meshToBeCompared_);
-  dmfm.computeMap(configuration_.getCameras()[10]);
-  DepthFromVelodyne frv(configuration_.getGtPath(), configuration_.getCameras()[0].imageHeight, configuration_.getCameras()[0].imageWidth);
+  for (int curFrame = configuration_.getInitFrame(); curFrame < configuration_.getLastFrame(); ++curFrame){
+    DepthMapFromMesh dmfm(&meshToBeCompared_);
+    dmfm.computeMap(configuration_.getCameras()[10]);
+    DepthFromVelodyne frv(configuration_.getGtPath(), configuration_.getCameras()[0].imageHeight, configuration_.getCameras()[0].imageWidth);
 
-  frv.createDepthFromIdx(10);
+    frv.createDepthFromIdx(10);
+
+
+  }
 
   compareDepthMaps(frv.getDepth(), dmfm.getDepth());
   printComparison();
@@ -97,6 +102,7 @@ void GtComparator::importMesh() {
 
 void GtComparator::compareDepthMaps(const cimg_library::CImg<float>& depthGT, const cimg_library::CImg<float>& depth) {
 
+
   if (depthGT._width != depth._width || depthGT._height != depth._height) {
     std::cout << " compareDepthMaps error the two depth maps have different dimensions" << std::endl;
     return;
@@ -105,7 +111,7 @@ void GtComparator::compareDepthMaps(const cimg_library::CImg<float>& depthGT, co
   for (int x = 0; x < depthGT._width; ++x) {
     for (int y = 0; y < depthGT._height; ++y) {
       if (depth(x, y) > 0.0 && depthGT(x, y) > 0.0)
-        res.errs_.push_back(depth(x, y) - depthGT(x, y));
+        res.errs_.push_back(scale*depth(x, y) - depthGT(x, y));
     }
   }
 
@@ -223,7 +229,7 @@ void GtComparator::registerCameras() {
   std::cout << "vvv: " << ges.pseudoEigenvalueMatrix() << std::endl;
   std::cout << "e: " << e << std::endl;
 
-  Eigen::Matrix3f Rsub = R.block<3, 3>(1, 1);
+  Rsub = R.block<3, 3>(1, 1);
 
   float a = 0, b = 0;
   for (int curCam = 0; curCam < (newCenters.size()); curCam++) {
@@ -240,7 +246,7 @@ void GtComparator::registerCameras() {
     //          a = a + Bn(:,i)'*R*An(:,i);
     //          b = b + Bn(:,i)'*Bn(:,i);
   }
-  float s = b / a;
+  scale = b / a;
 
   std::cout << "b: " << b << std::endl;
   std::cout << "a: " << a << std::endl;
@@ -249,13 +255,13 @@ void GtComparator::registerCameras() {
   Eigen::Vector3f centroidEig(centroid[0], centroid[1], centroid[2]);
 
   //%Compute the final translation
-  Eigen::Vector3f T = centroidGtEig - s  * Rsub* centroidEig;
+   T = centroidGtEig - scale  * Rsub* centroidEig;
 
   std::cout << "centroidEig: " << centroidEig << std::endl;
   std::cout << "centroidGtEig: " << centroidGtEig << std::endl;
   std::cout << "R: " << Rsub << std::endl;
   std::cout << "T: " << T << std::endl;
-  std::cout << "s: " << s << std::endl;
+  std::cout << "s: " << scale << std::endl;
 
   std::ofstream file1("centroid.txt");
   std::ofstream file2("centroidGT.txt");
@@ -276,7 +282,7 @@ void GtComparator::registerCameras() {
     CameraType c = configuration_.getCameras()[curCam];
     Eigen::Vector3f va, f;
     va << c.center[0], c.center[1], c.center[2];
-    f = s * Rsub *va+ T;
+    f = scale * Rsub *va+ T;
 
     file3 << f[0] << " " << f[1] << " " << f[2] << " " << std::endl;
   }

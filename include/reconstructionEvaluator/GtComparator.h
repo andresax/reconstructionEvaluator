@@ -28,7 +28,7 @@ private:
   void importMesh();
   void registerCameras();
   void estimateScale();
-  void compareDepthMaps(const cimg_library::CImg<float> &depthGT, const cimg_library::CImg<float> &depth);
+  void compareDepthMaps(const std::vector<cimg_library::CImg<float>> &depthGT, const std::vector<cimg_library::CImg<float>> &depth);
   void printComparison();
   Configuration configuration_;
 
@@ -36,6 +36,9 @@ private:
   Polyhedron meshToBeCompared_;
   ComparisonResults res;
   Eigen::Matrix4f rotoTr_;
+  Eigen::Matrix3f Rsub;
+  Eigen::Vector3f T;
+  float scale;
 
 };
 

@@ -59,6 +59,8 @@ void Configuration::parse() {
       camerasGt_ = cameraParser.getCameras();
     }
   }
+  utilities::readLineAndStore(file_, initFrame_);
+  utilities::readLineAndStore(file_, lastFrame_);
 
 }
 
