@@ -76,8 +76,9 @@ void DepthMapFromMesh::computeMap(const CameraType& cam) {
   //printRays(rays);
   depth.save_ascii("depthMesh.txt");
 
-  depth.normalize(0, 255);
-  depth.save_png("depthMesh.png");
+  cimg_library::CImg<float> deptht=depth;
+  deptht.normalize(0, 255);
+  deptht.save_png("depthMesh.png");
 
 }
 

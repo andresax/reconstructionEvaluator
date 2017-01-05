@@ -17,6 +17,8 @@ Configuration::Configuration(const std::string &path) {
     std::cout << path << " opened" << std::endl;
   else
     std::cout << "Error reading " << path << std::endl;
+  initFrame_ = 0;
+  lastFrame_ = 0;
 }
 
 void Configuration::setConfiguration(const std::string &path) {
@@ -27,6 +29,8 @@ void Configuration::setConfiguration(const std::string &path) {
     std::cout << "Error reading " << path << std::endl;
 }
 Configuration::Configuration() {
+  initFrame_ = 0;
+  lastFrame_ = 0;
 }
 Configuration::~Configuration() {
 }

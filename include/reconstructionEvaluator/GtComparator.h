@@ -27,8 +27,9 @@ private:
   void importGT();
   void importMesh();
   void registerCameras();
-  void estimateScale();
   void compareDepthMaps(const std::vector<cimg_library::CImg<float>> &depthGT, const std::vector<cimg_library::CImg<float>> &depth);
+  void compareDepthMaps();
+  void accumulateDepthMaps(const cimg_library::CImg<float> &depthGT, const cimg_library::CImg<float> &depth);
   void printComparison();
   Configuration configuration_;
 
@@ -38,7 +39,8 @@ private:
   Eigen::Matrix4f rotoTr_;
   Eigen::Matrix3f Rsub;
   Eigen::Vector3f T;
-  float scale;
+  float scale_;
+  int countImages_;
 
 };
 
