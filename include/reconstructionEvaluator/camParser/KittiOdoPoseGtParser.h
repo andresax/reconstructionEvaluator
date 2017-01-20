@@ -23,6 +23,7 @@ public:
   void setPathIntrinsicCalib(const boost::filesystem::path &path, int i);
 private:
   glm::mat4 intrinsics_;
+  int w,h;
 };
 
 } /* namespace reconstructorEvaluator */

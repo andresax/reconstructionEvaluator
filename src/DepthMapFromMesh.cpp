@@ -40,7 +40,7 @@ DepthMapFromMesh::DepthMapFromMesh(Polyhedron *mesh) {
 DepthMapFromMesh::~DepthMapFromMesh() {
 }
 
-void DepthMapFromMesh::computeMap(const CameraType& cam) {
+void DepthMapFromMesh::computeMap(const CameraType& cam,int num) {
   curCam = cam;
   glm::vec3 curRay, curIntersection;
 
@@ -48,19 +48,24 @@ void DepthMapFromMesh::computeMap(const CameraType& cam) {
 
   depth = cimg_library::CImg<float>(cam.imageWidth, cam.imageHeight);
   depth.fill(-1.0);
+//  std::ofstream file("outMesh3.ply");
+//  std::ofstream file2("outMesh2.ply");
   std::vector<Ray> rays;
   for (int row = 0; row < cam.imageWidth; ++row) {
     for (int col = 0; col < cam.imageHeight; ++col) {
       computeRayFromCurCam(row, col, curRay);
+//      file2<< curRay.x<<" "<<curRay.y<<" "<<curRay.z<<std::endl;
       Ray ray(Point(cam.center.x, cam.center.y, cam.center.z), Vector(curRay.x, curRay.y, curRay.z));
       rays.push_back(ray);
       //Segment seg(Point(cam.center.x, cam.center.y, cam.center.z), Point(cam.center.x, cam.center.y, cam.center.z)+2000.0*Vector(curRay.x, curRay.y, curRay.z));
-      Ray_intersection intersection = tree.any_intersection(ray);
+      Ray_intersection intersection = tree.first_intersection(ray);
       if (intersection) {
         // gets intersection object
         const Point* p = boost::get<Point>(&(intersection->first));
-        if (p) {
+        if (p ) {
           float distance = glm::length(cam.center - glm::vec3(p->x(), p->y(), p->z()));
+          glm::vec3 dd= ( cam.center - glm::vec3(p->x(), p->y(), p->z()));
+//          file<< 5.20606*dd.x<<" "<<5.20606*dd.y<<" "<<5.20606*dd.z<<std::endl;
 
           if (distance > 0.0 && (distance < depth(row, col) || depth(row, col) < 0.0)) {
             depth(row, col) = distance;
@@ -72,8 +77,10 @@ void DepthMapFromMesh::computeMap(const CameraType& cam) {
 
     }
   }
+//  file.close();
+//  file2.close();
+  //printRays(rays,num);
 
-  //printRays(rays);
   depth.save_ascii("depthMesh.txt");
 
   cimg_library::CImg<float> deptht=depth;
@@ -89,12 +96,19 @@ void DepthMapFromMesh::computeRayFromCurCam(const float & x, const float & y, gl
 
   glm::vec4 vv = (curCam.extrinsics) * glm::vec4(vecCenterpt2d, 1.0);
 //  utilities::printMatrix("curCam.extrinsics",curCam.extrinsics);
-  ray = glm::normalize(glm::vec3(vv[0] / vv[3], vv[1] / vv[3], vv[2] / vv[3]));
+//  ray = glm::normalize(glm::vec3(vv[0] / vv[3], vv[1] / vv[3], vv[2] / vv[3]));
+  ray = glm::normalize(glm::vec3(vv[0], vv[1], vv[2] ));
+//utilities::printMatrix("vv", vv);
+//  glm::vec3 check = ray * curCam.rotation   + curCam.translation;
+
+  //ray = glm::vec3(vv.x,vv.y,vv.z);
 }
 
-void DepthMapFromMesh::printRays(const std::vector<Ray> &rays) {
+void DepthMapFromMesh::printRays(const std::vector<Ray> &rays,int num) {
 
-  std::ofstream visFile("rays.ply");
+  std::stringstream s;
+  s<<"rays/rays"<<num<<".ply";
+  std::ofstream visFile(s.str());
 //
   int numVisRays = rays.size();
 

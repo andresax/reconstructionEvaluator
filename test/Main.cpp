@@ -8,10 +8,10 @@
 #include <GtComparator.h>
 
 
-int main(int argc, char **argv) {
+  int main(int argc, char **argv) {
 
 
-  reconstructorEvaluator::GtComparator comparator("/home/andrea/workspaceC/reconstructionEvaluator/config/kitti.config");
+  reconstructorEvaluator::GtComparator comparator("/home/andrea/workspaceC/reconstructionEvaluator/config/kitti2.config");
   comparator.run();
 
 }

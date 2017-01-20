@@ -91,13 +91,14 @@ void OpenMvgParser::parseViews(const std::map<int, glm::mat3> & intrinsics, cons
         cameras_[curCam].cameraMatrix = eMatrix * kMatrix;
         cameras_[curCam].extrinsics = eMatrix;
 
-        std::cout << "curCam: " << curCam << std::endl;
+        /*std::cout << "curCam: " << curCam << std::endl;
         utilities::printMatrix("Intrinsics A", kMatrix);
         utilities::printMatrix("Intrinsics B", cameras_[curCam].intrinsics);
         utilities::printMatrix("Rotation", cameras_[curCam].rotation);
         utilities::printMatrix("traslation", cameras_[curCam].translation);
+        utilities::printMatrix("center", cameras_[curCam].center);
         utilities::printMatrix("Extrinsics", eMatrix);
-        utilities::printMatrix("camera matrix", cameras_[curCam].cameraMatrix);
+        utilities::printMatrix("camera matrix", cameras_[curCam].cameraMatrix);*/
 
       } catch (std::out_of_range e) {
         std::cerr << "std::out_of_range exception trying to look for extrinsics matrix " << idExtrinsics << std::endl;

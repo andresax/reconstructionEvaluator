@@ -50,6 +50,7 @@ bool CameraParser::parseCameras(const boost::filesystem::path &path) {
         kittiParser.parse(path);
         cameras_ = kittiParser.getCameras();
 
+
       } else {
         std::cout << "CameraParser::parseCameras ERROR: path is not a json or txt file" << std::endl;
         return false;

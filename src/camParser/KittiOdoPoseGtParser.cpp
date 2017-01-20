@@ -12,7 +12,7 @@
 namespace reconstructorEvaluator {
 
 KittiOdoPoseGtParser::KittiOdoPoseGtParser() {
-
+w=1240,h=376;
 }
 
 KittiOdoPoseGtParser::~KittiOdoPoseGtParser() {
@@ -44,7 +44,7 @@ void KittiOdoPoseGtParser::parse(const boost::filesystem::path& path) {
       for (int row = 0; row < 3; row++) {
         curCam.center[row] = temp[row][3];
       }
-      curCam.translation = -curCam.translation * (curCam.rotation);
+      curCam.translation = -curCam.center * (curCam.rotation);
 
       for (int row = 0; row < 3; row++) {
         curCam.extrinsics[row][3] = curCam.translation[row];
@@ -55,7 +55,8 @@ void KittiOdoPoseGtParser::parse(const boost::filesystem::path& path) {
           curCam.intrinsics[row][col] = intrinsics_[row][col];
         }
       }
-
+      curCam.imageHeight = h;
+      curCam.imageWidth = w;
       curCam.cameraMatrix = curCam.extrinsics * intrinsics_;
       cameras_.push_back(curCam);
     }

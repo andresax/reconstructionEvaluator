@@ -93,6 +93,8 @@ void DepthFromVelodyne::createDepthFromIdx(int idx) {
   std::string filename(pathBase_ + "/velodyne/" + utilities::getFrameNumber(idx, 6) + ".bin");
   std::ifstream input(filename, std::ios::in | std::ios::binary);
 
+//  std::ofstream file("velo2.ply");
+
   depth = cimg_library::CImg<float>(imageWidth_, imageHeight_);
   depth.fill(-1.0);
   while (input.good() && !input.eof()) {
@@ -100,25 +102,30 @@ void DepthFromVelodyne::createDepthFromIdx(int idx) {
     float point[3];
     input.read((char *) point, 3 * sizeof(float));
     input.read((char *) &dummy, sizeof(float));
-    glm::vec4 pt3d = glm::vec4(point[0], point[1], point[2], 1.0);
+    if (point[0] > 0.0 ) {
+      glm::vec4 pt3d = glm::vec4(point[0], point[1], point[2], 1.0);
 
-    glm::vec4 pt2dH = pt3d * tr * P[0];
+      glm::vec4 pt2dH = pt3d * tr * P[0];
+      glm::vec4 pt3 = pt3d * tr;
 
-    glm::vec2 pt2d = glm::vec2(pt2dH.x / pt2dH.z, pt2dH.y / pt2dH.z);
+      glm::vec2 pt2d = glm::vec2(pt2dH.x / pt2dH.z, pt2dH.y / pt2dH.z);
 
-    float distance = glm::length(glm::vec3(point[0], point[1], point[2]));
+//    file<<pt3.x<<" "<<pt3.y<<" "<<pt3.z<<" "<<std::endl;
+      float distance = glm::length(glm::vec3(point[0], point[1], point[2]));
 
-    int idX = static_cast<int>(pt2d.x);
-    int idY = static_cast<int>(pt2d.y);
+      int idX = static_cast<int>(pt2d.x);
+      int idY = static_cast<int>(pt2d.y);
 
-    if (0 < idX && idX < imageWidth_ && //
-        0 < idY && idY < imageHeight_ && //
-        distance > 0.0 && (distance < depth(idX, idY) || depth(idX, idY) < 0.0)) {
-      depth(idX, idY) = distance;
+      if (distance < 15.0 && 0 < idX && idX < imageWidth_ && //
+          0 < idY && idY < imageHeight_ && //
+          distance > 0.0 && (distance < depth(idX, idY) || depth(idX, idY) < 0.0)) {
+        depth(idX, idY) = distance;
+      }
     }
 
   }
-  depth.save_ascii("depth.txt");
+//  file.close();
+//  depth.save_ascii("depth.txt");
   depth.save_png("depth.png");
 
   input.close();

@@ -15,6 +15,7 @@
 #include <Eigen/Core>
 #include <Eigen/Eigenvalues>
 #include <utilities.hpp>
+#include <CImg/CImg.h>
 
 namespace reconstructorEvaluator {
 
@@ -38,11 +39,11 @@ void GtComparator::run() {
   std::ifstream file(configuration_.getMeshPath());
   file >> meshToBeCompared_;
 
-  std::cout << "GtComparator:: writing mesh...";
-  std::cout.flush();
-  std::ofstream fileTest1("testMesh.off");
-  fileTest1 << meshToBeCompared_;
-  std::cout << "DONE." << std::endl;
+//  std::cout << "GtComparator:: writing mesh...";
+//  std::cout.flush();
+//  std::ofstream fileTest1("testMesh.off");
+//  fileTest1 << meshToBeCompared_;
+//  std::cout << "DONE." << std::endl;
 
 //  std::cout<<"GtComparator:: writing mesh gt...";
 //  std::cout.flush();
@@ -51,10 +52,10 @@ void GtComparator::run() {
 //  std::cout<<"DONE."<<std::endl;
 
   for (int curFrame = configuration_.getInitFrame(); curFrame < configuration_.getLastFrame(); ++curFrame) {
-    std::cout << "GtComparator:: collecting errors frame num "<<curFrame;
+    std::cout << "GtComparator:: collecting errors frame num " << curFrame;
     std::cout.flush();
     DepthMapFromMesh dmfm(&meshToBeCompared_);
-    dmfm.computeMap(configuration_.getCameras()[curFrame]);
+    dmfm.computeMap(configuration_.getCameras()[curFrame], curFrame);
     DepthFromVelodyne frv(configuration_.getGtPath(), configuration_.getCameras()[0].imageHeight, configuration_.getCameras()[0].imageWidth);
 
     frv.createDepthFromIdx(curFrame);
@@ -114,21 +115,22 @@ void GtComparator::compareDepthMaps(const std::vector<cimg_library::CImg<float>>
   for (int curFrame = 0; curFrame < depthGTVec.size(); ++curFrame) {
     cimg_library::CImg<float> depthGT = depthGTVec[curFrame];
     cimg_library::CImg<float> depth = depthVec[curFrame];
-    accumulateDepthMaps(depthGT,depth);
+    accumulateDepthMaps(depthGT, depth);
 
   }
   compareDepthMaps();
 }
 
 void GtComparator::compareDepthMaps() {
+
   float sum = std::accumulate(res.errs_.begin(), res.errs_.end(), 0.0);
 
   std::vector<float> sqrVec;
   std::transform(res.errs_.begin(), res.errs_.end(), std::back_inserter(sqrVec), [](int n) {return std::pow(n,2);});
-  float sumSqr = std::accumulate(res.errs_.begin(), res.errs_.end(), 0.0);
+  float sumSqr = std::accumulate(sqrVec.begin(), sqrVec.end(), 0.0);
   std::vector<float> absVec;
   std::transform(res.errs_.begin(), res.errs_.end(), std::back_inserter(absVec), [](int n) {return std::fabs(n);});
-  float sumAbs = std::accumulate(res.errs_.begin(), res.errs_.end(), 0.0);
+  float sumAbs = std::accumulate(absVec.begin(), absVec.end(), 0.0);
 
   res.mean = sum / res.errs_.size();
   res.rmse = std::sqrt(sumSqr) / res.errs_.size();
@@ -142,6 +144,9 @@ void GtComparator::compareDepthMaps() {
 
 void GtComparator::accumulateDepthMaps(const cimg_library::CImg<float>& depthGT, const cimg_library::CImg<float>& depth) {
 
+  cimg_library::CImg<float> depthErrrr = cimg_library::CImg<float>(depthGT.width(), depth.height());
+
+  depthErrrr.fill(-1.0);
   if (depthGT._width != depth._width || depthGT._height != depth._height) {
     std::cout << " compareDepthMaps error the two depth maps have different dimensions" << std::endl;
     return;
@@ -149,10 +154,15 @@ void GtComparator::accumulateDepthMaps(const cimg_library::CImg<float>& depthGT,
 
   for (int x = 0; x < depthGT._width; ++x) {
     for (int y = 0; y < depthGT._height; ++y) {
-      if (depth(x, y) > 0.0 && depthGT(x, y) > 0.0)
-        res.errs_.push_back( depth(x, y) - depthGT(x, y));
+      if (depth(x, y) > 0.0 && depthGT(x, y) > 0.0) {
+        res.errs_.push_back((scale_ * depth(x, y) - depthGT(x, y)));
+
+        depthErrrr(x, y) = std::fabs((scale_ * depth(x, y) - depthGT(x, y)));
+      }
     }
   }
+  depthErrrr.normalize(0, 255);
+  depthErrrr.save_png("err.png");
 }
 
 void GtComparator::registerCameras() {
@@ -324,8 +334,8 @@ void GtComparator::printComparison() {
 
   float maxEl = *std::max_element(res.errs_.begin(), res.errs_.end());
   float minEl = *std::min_element(res.errs_.begin(), res.errs_.end());
-  const float binSize = 10.0;
-  int numBin = (int) ceil((maxEl - minEl) / binSize); // requires <cmath>
+  const float binSize = 0.2;
+  int numBin = min(11, (int) ceil((maxEl - minEl) / binSize)); // requires <cmath>
   std::vector<int> histError(numBin, 0);
 
   for (auto e : res.errs_) {

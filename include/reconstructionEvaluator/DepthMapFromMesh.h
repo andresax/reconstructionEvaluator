@@ -22,7 +22,7 @@ public:
     mesh_ = mesh;
   }
 
-  void computeMap(const CameraType &cam);
+  void computeMap(const CameraType &cam,int nnum=0);
 
   const cimg_library::CImg<float>& getDepth() const {
     return depth;
@@ -32,7 +32,7 @@ private:
 
   void computeRayFromCurCam(const float & x, const float &y, glm::vec3 &ray);
 
-  void printRays(const std::vector<Ray> &rays);
+  void printRays(const std::vector<Ray> &rays, int num);
 
   Polyhedron *mesh_;
   CameraType curCam;
