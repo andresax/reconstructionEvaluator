@@ -58,7 +58,7 @@ void GtComparator::run() {
     dmfm.computeMap(configuration_.getCameras()[curFrame], curFrame);
     DepthFromVelodyne frv(configuration_.getGtPath(), configuration_.getCameras()[0].imageHeight, configuration_.getCameras()[0].imageWidth);
 
-    frv.createDepthFromIdx(curFrame);
+    frv.createDepthFromIdx(curFrame+1);
 
     accumulateDepthMaps(frv.getDepth(), dmfm.getDepth());
     countImages_++;
