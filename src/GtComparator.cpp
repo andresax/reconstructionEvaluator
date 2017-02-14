@@ -133,7 +133,7 @@ void GtComparator::compareDepthMaps() {
   float sumAbs = std::accumulate(absVec.begin(), absVec.end(), 0.0);
 
   res.mean = sum / res.errs_.size();
-  res.rmse = std::sqrt(sumSqr) / res.errs_.size();
+  res.rmse = std::sqrt(sumSqr/ res.errs_.size()) ;
   res.mae = sumAbs / res.errs_.size();
 
   std::vector<double> diff(res.errs_.size());
