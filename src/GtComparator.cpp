@@ -32,7 +32,9 @@ GtComparator::~GtComparator() {
 }
 
 void GtComparator::run() {
-  registerCameras();
+  if(!configuration_.isStereo()){
+    registerCameras();
+  }
 
   //importGT();
   //importMesh();
@@ -51,14 +53,19 @@ void GtComparator::run() {
 //  fileTest2 << meshGt_;
 //  std::cout<<"DONE."<<std::endl;
 
-  for (int curFrame = configuration_.getInitFrame(); curFrame < configuration_.getLastFrame(); ++curFrame) {
+  for (int curFrame = configuration_.getInitFrame(); curFrame < configuration_.getLastFrame(); (configuration_.isStereo()?curFrame+=2:++curFrame)) {
+    if(configuration_.isStereo()){
+        float curbaseline = glm::length(configuration_.getCameras()[curFrame].center - configuration_.getCameras()[curFrame+1].center);
+        scale_ = configuration_.getBaseline()/curbaseline;
+      }
     std::cout << "GtComparator:: collecting errors frame num " << curFrame;
     std::cout.flush();
+
+    DepthFromVelodyne frv(configuration_.getGtPath(), configuration_.getCameras()[0].imageHeight, configuration_.getCameras()[0].imageWidth);
+    frv.createDepthFromIdx(curFrame);
+
     DepthMapFromMesh dmfm(&meshToBeCompared_);
     dmfm.computeMap(configuration_.getCameras()[curFrame], curFrame);
-    DepthFromVelodyne frv(configuration_.getGtPath(), configuration_.getCameras()[0].imageHeight, configuration_.getCameras()[0].imageWidth);
-
-    frv.createDepthFromIdx(curFrame+1);
 
     accumulateDepthMaps(frv.getDepth(), dmfm.getDepth());
     countImages_++;

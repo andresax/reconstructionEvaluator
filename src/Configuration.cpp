@@ -19,6 +19,8 @@ Configuration::Configuration(const std::string &path) {
     std::cout << "Error reading " << path << std::endl;
   initFrame_ = 0;
   lastFrame_ = 0;
+  stereo_=false;
+  baseline_=0.0;
 }
 
 void Configuration::setConfiguration(const std::string &path) {
@@ -31,6 +33,8 @@ void Configuration::setConfiguration(const std::string &path) {
 Configuration::Configuration() {
   initFrame_ = 0;
   lastFrame_ = 0;
+  stereo_=false;
+  baseline_=0.0;
 }
 Configuration::~Configuration() {
 }
@@ -65,7 +69,12 @@ void Configuration::parse() {
   }
   utilities::readLineAndStore(file_, initFrame_);
   utilities::readLineAndStore(file_, lastFrame_);
-
+  utilities::readLineAndStore(file_, baseline_);
+  if(baseline_!=0){
+    stereo_=true;
+  }else{
+    stereo_=false;
+  }
 }
 
 bool Configuration::parseWhichCams(const std::string& whichCams) {

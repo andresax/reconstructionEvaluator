@@ -17,7 +17,7 @@ namespace reconstructorEvaluator {
 class DepthFromVelodyne {
 public:
   DepthFromVelodyne(const std::string &path, const int & imageHeight, const int & imageWidth );
-  virtual ~DepthFromVelodyne();
+  virtual ~DepthFromVelodyne() = default;
 
   void createDepthFromIdx(int idx);
 
@@ -28,10 +28,14 @@ public:
 private:
   std::string pathBase_;
   std::vector<glm::mat4> P;
+  std::vector<glm::mat4> R_rect;
+  glm::mat4 E_velo_to_cam;
   glm::mat4 tr;
   int imageHeight_;
   int imageWidth_;
   cimg_library::CImg<float> depth;
+  bool odoSeq_;
+  bool rawSeq_;
 
   void loadCalib();
 };

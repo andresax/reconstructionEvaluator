@@ -1,10 +1,3 @@
-/*
- * DepthMapFromMesh.cpp
- *
- *  Created on: Dec 14, 2016
- *      Author: andrea
- */
-
 #include <DepthMapFromMesh.h>
 
 #include <CGAL/Simple_cartesian.h>
@@ -49,7 +42,7 @@ void DepthMapFromMesh::computeMap(const CameraType& cam,int num) {
   depth = cimg_library::CImg<float>(cam.imageWidth, cam.imageHeight);
   depth.fill(-1.0);
 //  std::ofstream file("outMesh3.ply");
-//  std::ofstream file2("outMesh2.ply");
+  std::ofstream file("outMesh2.txt");
   std::vector<Ray> rays;
   for (int row = 0; row < cam.imageWidth; ++row) {
     for (int col = 0; col < cam.imageHeight; ++col) {
@@ -65,7 +58,7 @@ void DepthMapFromMesh::computeMap(const CameraType& cam,int num) {
         if (p ) {
           float distance = glm::length(cam.center - glm::vec3(p->x(), p->y(), p->z()));
           glm::vec3 dd= ( cam.center - glm::vec3(p->x(), p->y(), p->z()));
-//          file<< 5.20606*dd.x<<" "<<5.20606*dd.y<<" "<<5.20606*dd.z<<std::endl;
+          file<< dd.x<<" "<<dd.y<<" "<<dd.z<<std::endl;
 
           if (distance > 0.0 && (distance < depth(row, col) || depth(row, col) < 0.0)) {
             depth(row, col) = distance;
@@ -77,7 +70,7 @@ void DepthMapFromMesh::computeMap(const CameraType& cam,int num) {
 
     }
   }
-//  file.close();
+  file.close();
 //  file2.close();
   //printRays(rays,num);
 

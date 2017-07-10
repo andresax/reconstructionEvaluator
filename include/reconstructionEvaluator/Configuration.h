@@ -51,6 +51,14 @@ public:
     return lastFrame_;
   }
 
+  float getBaseline() const {
+    return baseline_;
+  }
+
+  bool isStereo() const {
+    return stereo_;
+  }
+
 private:
   std::ifstream file_;
   bool parseWhichCams(const std::string &path);
@@ -62,6 +70,8 @@ private:
   std::vector<int> camerasIdx_;
   int initFrame_;
   int lastFrame_;
+  float baseline_;
+  bool stereo_;
 
 };
 
