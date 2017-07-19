@@ -26,7 +26,7 @@ DepthFromVelodyne::DepthFromVelodyne(const std::string &path, const int & imageH
 void DepthFromVelodyne::loadCalib() {
 
   std::string filename;
-  filename =(pathBase_ + "/calib.txt");
+  filename = (pathBase_ + "/calib.txt");
   std::ifstream input;
 
   input.open(filename.c_str(), std::ios::in);
@@ -43,7 +43,6 @@ void DepthFromVelodyne::loadCalib() {
   } else {
     odoSeq_ = true;
   }
-
 
   if (odoSeq_ == true) {
     input.seekg(0, std::ios::beg);
@@ -96,7 +95,7 @@ void DepthFromVelodyne::loadCalib() {
     ss >> tr[2][3];
   }
 
-  if (rawSeq_==true) {
+  if (rawSeq_ == true) {
     std::string line;
     std::string dummy;
     std::stringstream ss;
@@ -216,17 +215,16 @@ void DepthFromVelodyne::loadCalib() {
 void DepthFromVelodyne::createDepthFromIdx(int idx) {
 
   std::string filename;
-  if (odoSeq_==true) {
+  if (odoSeq_ == true) {
     filename = (pathBase_ + "/velodyne/" + utilities::getFrameNumber(idx, 6) + ".bin");
   }
-  if (rawSeq_==true) {
+  if (rawSeq_ == true) {
     filename = (pathBase_ + "/velodyne_points/data/" + utilities::getFrameNumber(idx / 2, 10) + ".bin");
   }
 
   std::ifstream input(filename, std::ios::in | std::ios::binary);
 
-  std::ofstream file("velo2.txt");
-
+  std::vector<glm::vec3> prprp;
   depth = cimg_library::CImg<float>(imageWidth_, imageHeight_);
   depth.fill(-1.0);
   while (input.good() && !input.eof()) {
@@ -236,34 +234,48 @@ void DepthFromVelodyne::createDepthFromIdx(int idx) {
     input.read((char *) &dummy, sizeof(float));
     if (point[0] > 0.0) {
       glm::vec2 pt2d;
-      glm::vec4 pt3,pt2evwd, pt2dH;
+      glm::vec4 pt3, pt2evwd, pt2dH;
       glm::vec4 pt3d = glm::vec4(point[0], point[1], point[2], 1.0);
-      if (odoSeq_==true) {
+      if (odoSeq_ == true) {
         pt2dH = pt3d * tr * P[0];
         pt3 = pt3d * tr;
       }
-      if (rawSeq_==true) {
-        pt2dH = pt3d * E_velo_to_cam * R_rect[2] * P[2];
+      if (rawSeq_ == true) {
+        pt2dH = pt3d * E_velo_to_cam * R_rect[0] * P[2];
 //        utilities::printMatrix("E_velo_to_cam",E_velo_to_cam);
 //        utilities::printMatrix("pt3d * E_velo_to_cam",pt3d * E_velo_to_cam);
 //        utilities::printMatrix("pt3d",pt3d);
 //        exit(0);
         pt3 = pt3d;
       }
-      file << pt3.x << " " << pt3.y << " " << pt3.z << " " << std::endl;
       pt2d = glm::vec2(pt2dH.x / pt2dH.z, pt2dH.y / pt2dH.z);
       float distance = glm::length(glm::vec3(point[0], point[1], point[2]));
-
       int idX = static_cast<int>(pt2d.x);
       int idY = static_cast<int>(pt2d.y);
 
-      if (distance < 30.0 && 0 < idX && idX < imageWidth_ && //
+      if (distance < 20.0 && 0 < idX && idX < imageWidth_ && //
           0 < idY && idY < imageHeight_ && //
           distance > 0.0 && (distance < depth(idX, idY) || depth(idX, idY) < 0.0)) {
         depth(idX, idY) = distance;
+
+
+
+
+        glm::vec3 vecCenterpt2d = distance*glm::normalize(
+            glm::vec3((idX - P[2][0][2]) / P[2][0][0], (idY - P[2][1][2]) / P[2][1][1], 1.0));
+
+        prprp.push_back(glm::vec3(vecCenterpt2d.x, vecCenterpt2d.y, vecCenterpt2d.z));
       }
     }
 
+  }
+
+  std::ofstream file("velo2.ply");
+  file << "ply" << std::endl << "format ascii 1.0" << std::endl << "element vertex " << prprp.size() << std::endl << "property float x" << std::endl
+      << "property float y" << std::endl << "property float z" << std::endl << " end_header" << std::endl;
+  for (auto pt3 : prprp) {
+
+    file << pt3.x << " " << pt3.y << " " << pt3.z << " " << std::endl;
   }
   file.close();
 //  depth.save_ascii("depth.txt");

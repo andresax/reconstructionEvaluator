@@ -42,11 +42,12 @@ void DepthMapFromMesh::computeMap(const CameraType& cam,int num) {
   depth = cimg_library::CImg<float>(cam.imageWidth, cam.imageHeight);
   depth.fill(-1.0);
 //  std::ofstream file("outMesh3.ply");
-  std::ofstream file("outMesh2.txt");
+
   std::vector<Ray> rays;
-  for (int row = 0; row < cam.imageWidth; ++row) {
-    for (int col = 0; col < cam.imageHeight; ++col) {
-      computeRayFromCurCam(row, col, curRay);
+  std::vector<glm::vec3> prprp;
+  for (int col = 0; col < cam.imageWidth; ++col) {
+    for (int row = 0; row < cam.imageHeight; ++row) {
+      computeRayFromCurCam(col, row, curRay);
 //      file2<< curRay.x<<" "<<curRay.y<<" "<<curRay.z<<std::endl;
       Ray ray(Point(cam.center.x, cam.center.y, cam.center.z), Vector(curRay.x, curRay.y, curRay.z));
       rays.push_back(ray);
@@ -57,11 +58,20 @@ void DepthMapFromMesh::computeMap(const CameraType& cam,int num) {
         const Point* p = boost::get<Point>(&(intersection->first));
         if (p ) {
           float distance = glm::length(cam.center - glm::vec3(p->x(), p->y(), p->z()));
-          glm::vec3 dd= ( cam.center - glm::vec3(p->x(), p->y(), p->z()));
-          file<< dd.x<<" "<<dd.y<<" "<<dd.z<<std::endl;
+          glm::vec4 dd4=  glm::vec4(p->x(), p->y(), p->z(),1.0);
+          glm::vec3 dd(dd4.x/dd4.w,dd4.y/dd4.w,dd4.z/dd4.w);
+          if (distance > 0.0 && (distance < depth(col, row) || depth(col, row) < 0.0)) {
+            depth(col, row) = distance;
 
-          if (distance > 0.0 && (distance < depth(row, col) || depth(row, col) < 0.0)) {
-            depth(row, col) = distance;
+            float scale=0.50354;
+            float cx = 609.5593;
+            float cy =172.854;
+            float fx =721.5377;
+            float fy =fx;
+            glm::vec3 vecCenterpt2d = glm::normalize(
+                glm::vec3((col - cx)/fx , (row - cy)/fy , 1.0));
+            prprp.push_back(scale*distance*vecCenterpt2d);
+
           }
           //std::cout << "intersection object is a point " << *p << std::endl;
         }
@@ -70,7 +80,15 @@ void DepthMapFromMesh::computeMap(const CameraType& cam,int num) {
 
     }
   }
+  std::ofstream file("outMesh2.ply");
+    file<<"ply"<<std::endl<<"format ascii 1.0"<<std::endl<<"element vertex " <<prprp.size() <<std::endl<<"property float x"
+        <<std::endl<<"property float y"<<std::endl<<"property float z"<<std::endl<<" end_header"<<std::endl;
+  for(auto dd:prprp){
+    file<< dd.x<<" "<<dd.y<<" "<<dd.z<<std::endl;
+  }
   file.close();
+
+
 //  file2.close();
   //printRays(rays,num);
 

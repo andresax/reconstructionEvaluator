@@ -32,7 +32,7 @@ GtComparator::~GtComparator() {
 }
 
 void GtComparator::run() {
-  if(!configuration_.isStereo()){
+  if (!configuration_.isStereo()) {
     registerCameras();
   }
 
@@ -53,11 +53,14 @@ void GtComparator::run() {
 //  fileTest2 << meshGt_;
 //  std::cout<<"DONE."<<std::endl;
 
-  for (int curFrame = configuration_.getInitFrame(); curFrame < configuration_.getLastFrame(); (configuration_.isStereo()?curFrame+=2:++curFrame)) {
-    if(configuration_.isStereo()){
-        float curbaseline = glm::length(configuration_.getCameras()[curFrame].center - configuration_.getCameras()[curFrame+1].center);
-        scale_ = configuration_.getBaseline()/curbaseline;
-      }
+  for (int curFrame = configuration_.getInitFrame(); curFrame < configuration_.getLastFrame(); (configuration_.isStereo() ? curFrame += 2 : ++curFrame)) {
+    if (configuration_.isStereo()) {
+      float curbaseline = glm::length(configuration_.getCameras()[curFrame].center - configuration_.getCameras()[curFrame + 1].center);
+      scale_ = configuration_.getBaseline() / curbaseline;
+      std::cout << "SCALE" << scale_ << std::endl;
+
+//        exit(0);
+    }
     std::cout << "GtComparator:: collecting errors frame num " << curFrame;
     std::cout.flush();
 
@@ -140,7 +143,7 @@ void GtComparator::compareDepthMaps() {
   float sumAbs = std::accumulate(absVec.begin(), absVec.end(), 0.0);
 
   res.mean = sum / res.errs_.size();
-  res.rmse = std::sqrt(sumSqr/ res.errs_.size()) ;
+  res.rmse = std::sqrt(sumSqr / res.errs_.size());
   res.mae = sumAbs / res.errs_.size();
 
   std::vector<double> diff(res.errs_.size());
@@ -159,6 +162,24 @@ void GtComparator::accumulateDepthMaps(const cimg_library::CImg<float>& depthGT,
     return;
   }
 
+  float XtX = 0.0;
+  float Xty = 0.0;
+  for (int x = 0; x < depthGT._width; ++x) {
+    for (int y = 0; y < depthGT._height; ++y) {
+      if (depth(x, y) > 0.0 && depthGT(x, y) > 0.0) {
+        XtX = XtX + (depth(x, y) * depth(x, y));
+        Xty = Xty + (depth(x, y) * depthGT(x, y));
+      }
+    }
+  }
+
+
+
+
+  scale_ = Xty / XtX;
+
+
+  std::cout << std::endl << "SCALE OK " << scale_ << std::endl;
   for (int x = 0; x < depthGT._width; ++x) {
     for (int y = 0; y < depthGT._height; ++y) {
       if (depth(x, y) > 0.0 && depthGT(x, y) > 0.0) {
