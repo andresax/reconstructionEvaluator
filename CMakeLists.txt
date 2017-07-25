@@ -42,7 +42,7 @@ include_directories(
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -frounding-math  -lpthread -lX11 -L/usr/X11R6/lib")
 
 # ------------------------ MESSAGES ----------------------------
- 
+  
 # ------------------------ BUILD -------------------------------
 
 file(GLOB_RECURSE gtComp_SOURCE 

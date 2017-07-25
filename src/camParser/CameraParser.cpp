@@ -27,7 +27,7 @@ bool CameraParser::parseCameras(const boost::filesystem::path &path) {
   if (boost::filesystem::exists(path)) {
     if (boost::filesystem::is_directory(path)) {
       boost::filesystem::path::iterator it = path.begin();
-      if (path.parent_path().filename().string() == "CamerasKE") {
+      if (path.parent_path().filename().string() == "camerasKE") {
         EpflParser epflParser;
         epflParser.parse(path);
         cameras_ = epflParser.getCameras();

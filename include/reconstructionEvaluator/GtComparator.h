@@ -23,6 +23,7 @@ public:
   GtComparator(const std::string &path);
   virtual ~GtComparator();
   void run();
+  void run2();
 private:
   void importGT();
   void importMesh();
@@ -31,6 +32,7 @@ private:
   void compareDepthMaps();
   void accumulateDepthMaps(const cimg_library::CImg<float> &depthGT, const cimg_library::CImg<float> &depth);
   void printComparison();
+  void loadDepthMapGT(const std::string &pathGT_, cimg_library::CImg<float> &depth,int w,int h);
   Configuration configuration_;
 
   Polyhedron meshGt_;

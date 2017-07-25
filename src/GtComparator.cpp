@@ -12,10 +12,12 @@
 #include <assimp/scene.h>
 #include <DepthMapFromMesh.h>
 #include <DepthFromVelodyne.h>
+#include <DepthFromPCL.h>
 #include <Eigen/Core>
 #include <Eigen/Eigenvalues>
 #include <utilities.hpp>
 #include <CImg/CImg.h>
+#include <opencv2/core.hpp>
 
 namespace reconstructorEvaluator {
 
@@ -32,6 +34,33 @@ GtComparator::~GtComparator() {
 }
 
 void GtComparator::run() {
+  std::ifstream file(configuration_.getMeshPath());
+  file >> meshToBeCompared_;
+  cimg_library::CImg<float> depthGT;
+  int curFrame = configuration_.getInitFrame();
+  std::cout << "GtComparator:: collecting errors frame num " << curFrame<<std::endl;
+  std::cout << "loading gt... " <<std::flush;
+  //loadDepthMapGT(configuration_.getGtPath(), depthGT, configuration_.getCameras()[curFrame].imageWidth,configuration_.getCameras()[curFrame].imageHeight);
+  std::cout << "DONE"<<std::endl;
+  depthGT.save_png("depthGT.png");
+//  exit(0);
+
+  DepthMapFromMesh dmfm(&meshToBeCompared_);
+  dmfm.computeMap(configuration_.getCameras()[curFrame], curFrame);
+
+  DepthFromPCL sfpcl;
+  sfpcl.run(configuration_.getGtPath(),configuration_.getCameras()[curFrame]);
+  sfpcl.getDepth().save_png("depthGT.png");
+  depthGT =sfpcl.getDepth();
+  accumulateDepthMaps(depthGT, dmfm.getDepth());
+  countImages_++;
+  std::cout << "DONE." << std::endl;
+
+  compareDepthMaps();
+  printComparison();
+}
+
+void GtComparator::run2() {
   if (!configuration_.isStereo()) {
     registerCameras();
   }
@@ -173,11 +202,7 @@ void GtComparator::accumulateDepthMaps(const cimg_library::CImg<float>& depthGT,
     }
   }
 
-
-
-
   scale_ = Xty / XtX;
-
 
   std::cout << std::endl << "SCALE OK " << scale_ << std::endl;
   for (int x = 0; x < depthGT._width; ++x) {
@@ -362,7 +387,7 @@ void GtComparator::printComparison() {
 
   float maxEl = *std::max_element(res.errs_.begin(), res.errs_.end());
   float minEl = *std::min_element(res.errs_.begin(), res.errs_.end());
-  const float binSize = 0.2;
+  const float binSize = 0.02;
   int numBin = min(11, (int) ceil((maxEl - minEl) / binSize)); // requires <cmath>
   std::vector<int> histError(numBin, 0);
 
@@ -387,6 +412,28 @@ void GtComparator::printComparison() {
   }
   std::cout << std::endl;
 
+}
+
+void GtComparator::loadDepthMapGT(const std::string &pathGT_,
+                              cimg_library::CImg<float> & depth, int w,int h) {
+
+  std::ifstream s;
+
+  s.open(pathGT_.c_str(), std::ios::in);
+
+  depth = cimg_library::CImg<float>(w, h);
+
+  float mean = 0.0, tot = 0.0;
+  for (int curR = 0; curR < h; ++curR) {
+    std::string line;
+    std::getline(s, line);
+    std::istringstream iss(line);
+    for (int curC = 0; curC < w; ++curC) {
+      char c;
+      iss >> depth(curC,curR);
+      iss >> c;
+    }
+  }
 }
 
 } /* namespace reconstructorEvaluator */

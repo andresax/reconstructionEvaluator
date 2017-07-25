@@ -1,15 +1,10 @@
-/*
- * EpflParser.cpp
- *
- *  Created on: Dec 13, 2016
- *      Author: andrea
- */
-
 #include <EpflParser.h>
 #include <iostream>
 #include <sstream>
 #include <fstream>
 #include <utilities.hpp>
+#include <opencv2/core.hpp>
+#include <opencv2/highgui.hpp>
 
 namespace reconstructorEvaluator {
 
@@ -64,6 +59,14 @@ void EpflParser::parse(const boost::filesystem::path& path) {
     tempCameraIntrinsicH[2][2] = curCam.intrinsics[2][2];
 
     curCam.cameraMatrix = tempCameraExtrinsic * tempCameraIntrinsicH;
+    std::string pathimage = path.string() +"../images/0000.png";
+
+    curCam.imageHeight = cv::imread(pathimage).rows;
+    curCam.imageWidth= cv::imread(pathimage).cols;
+
+    std::cout<<curCam.imageHeight<<std::endl;
+    std::cout<<curCam.imageWidth<<std::endl;
+    std::cout<<pathimage<<std::endl;
 
 //    std::cout<<"Counter" << i <<std::endl;
 //    utilities::printMatrix("intrinsics", curCam.intrinsics);
