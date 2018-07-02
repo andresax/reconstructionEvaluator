@@ -33,7 +33,7 @@ DepthMapFromMesh::DepthMapFromMesh(Polyhedron *mesh) {
 DepthMapFromMesh::~DepthMapFromMesh() {
 }
 
-void DepthMapFromMesh::computeMap(const CameraType& cam,int num) {
+void DepthMapFromMesh::computeMap(const CameraType& cam,int num,float scale_) {
   curCam = cam;
   glm::vec3 curRay, curIntersection;
 
@@ -57,20 +57,34 @@ void DepthMapFromMesh::computeMap(const CameraType& cam,int num) {
         // gets intersection object
         const Point* p = boost::get<Point>(&(intersection->first));
         if (p ) {
-          float distance = glm::length(cam.center - glm::vec3(p->x(), p->y(), p->z()));
+          float scale=0.9*0.50354;
+          scale=scale_*1.05;
+          scale=1.0f;
+          //scale=1-0.532745;
+    // std::cout<<scale<<std::endl;
+    // exit(0);
+          float distance = scale * glm::length(cam.center - glm::vec3(p->x(), p->y(), p->z()));
           glm::vec4 dd4=  glm::vec4(p->x(), p->y(), p->z(),1.0);
           glm::vec3 dd(dd4.x/dd4.w,dd4.y/dd4.w,dd4.z/dd4.w);
-          if (distance > 0.0 && (distance < depth(col, row) || depth(col, row) < 0.0)) {
-            depth(col, row) = distance;
+          if (distance < 20.0 && distance > 0.0 && (distance < depth(col, row) || depth(col, row) < 0.0)) {
 
-            float scale=0.50354;
-            float cx = 609.5593;
-            float cy =172.854;
-            float fx =721.5377;
-            float fy =fx;
-            glm::vec3 vecCenterpt2d = glm::normalize(
-                glm::vec3((col - cx)/fx , (row - cy)/fy , 1.0));
-            prprp.push_back(scale*distance*vecCenterpt2d);
+            //exit(0);
+           // float cx = 609.5593;
+           // float cy =172.854;
+           // float fx =721.5377;
+           // float fy =fx;
+            // float cx = 824.4251;
+            // float cy = 605.18715;
+            // float fx = 2892.843;
+            // float fy = 2882.249;
+           // float cx = 1006.81;
+           // float cy =1520.69 ;
+           // float fx =2759.48;
+           // float fy =2764.16;
+           //  glm::vec3 vecCenterpt2d = glm::normalize(
+           //      glm::vec3((col - cx)/fx , (row - cy)/fy , 1.0));
+           //  prprp.push_back(distance*vecCenterpt2d);
+            depth(col, row) = distance;
 
           }
           //std::cout << "intersection object is a point " << *p << std::endl;
@@ -80,23 +94,23 @@ void DepthMapFromMesh::computeMap(const CameraType& cam,int num) {
 
     }
   }
-  std::ofstream file("outMesh2.ply");
-    file<<"ply"<<std::endl<<"format ascii 1.0"<<std::endl<<"element vertex " <<prprp.size() <<std::endl<<"property float x"
-        <<std::endl<<"property float y"<<std::endl<<"property float z"<<std::endl<<" end_header"<<std::endl;
-  for(auto dd:prprp){
-    file<< dd.x<<" "<<dd.y<<" "<<dd.z<<std::endl;
-  }
-  file.close();
+ // std::ofstream file("outMesh2.ply");
+ //   file<<"ply"<<std::endl<<"format ascii 1.0"<<std::endl<<"element vertex " <<prprp.size() <<std::endl<<"property float x"
+ //       <<std::endl<<"property float y"<<std::endl<<"property float z"<<std::endl<<" end_header"<<std::endl;
+ // for(auto dd:prprp){
+ //   file<< dd.x<<" "<<dd.y<<" "<<dd.z<<std::endl;
+ // }
+ // file.close();
 
 
-//  file2.close();
-  //printRays(rays,num);
+ // file2.close();
+  // printRays(rays,num);
 
-  depth.save_ascii("depthMesh.txt");
+ // depth.save_ascii("depthMesh.txt");
 
-  cimg_library::CImg<float> deptht=depth;
-  deptht.normalize(0, 255);
-  deptht.save_png("depthMesh.png");
+//  cimg_library::CImg<float> deptht=depth;
+//  deptht.normalize(0, 255);
+//  deptht.save_png("depthMesh.png");
 
 }
 

@@ -33,25 +33,90 @@ GtComparator::~GtComparator() {
 
 }
 
+void GtComparator::run2() {
+
+  std::ifstream file(configuration_.getMeshPath());
+  file >> meshToBeCompared_;
+  cimg_library::CImg<float> depthGT;
+  for (int curFrame = configuration_.getInitFrame(); curFrame < configuration_.getLastFrame(); (configuration_.isStereo() ? curFrame += 5 : ++curFrame)) {
+
+    std::cout << "GtComparator:: collecting errors frame num " << curFrame << std::endl;
+    //std::cout << "loading gt... " << std::flush;
+    //loadDepthMapGT(configuration_.getGtPath(), depthGT, configuration_.getCameras()[curFrame].imageWidth,configuration_.getCameras()[curFrame].imageHeight);
+    //std::cout << "DONE" << std::endl;
+  //  exit(0);
+
+    DepthMapFromMesh dmfm(&meshToBeCompared_);
+    dmfm.computeMap(configuration_.getCameras()[curFrame], curFrame);
+    DepthFromPCL sfpcl;
+    sfpcl.run(configuration_.getGtPath(), configuration_.getCameras()[curFrame]);
+    depthGT = sfpcl.getDepth();
+    accumulateDepthMaps(depthGT, dmfm.getDepth());
+    countImages_++;
+    std::cout << "DONE." << std::endl;
+//    compareDepthMaps();
+//    printComparison();
+//    exit(0);
+  }
+  compareDepthMaps();
+  printComparison();
+}
+
+
 void GtComparator::run() {
   std::ifstream file(configuration_.getMeshPath());
   file >> meshToBeCompared_;
   cimg_library::CImg<float> depthGT;
   int curFrame = configuration_.getInitFrame();
-  std::cout << "GtComparator:: collecting errors frame num " << curFrame<<std::endl;
-  std::cout << "loading gt... " <<std::flush;
-  //loadDepthMapGT(configuration_.getGtPath(), depthGT, configuration_.getCameras()[curFrame].imageWidth,configuration_.getCameras()[curFrame].imageHeight);
-  std::cout << "DONE"<<std::endl;
-  depthGT.save_png("depthGT.png");
+  std::cout << "GtComparator:: collecting errors frame num " << curFrame << std::endl;
+  // std::cout << "loading gt... " << std::flush;
+  // loadDepthMapGT(configuration_.getGtPath(), depthGT, configuration_.getCameras()[curFrame].imageWidth,configuration_.getCameras()[curFrame].imageHeight);
+  // std::cout << "DONE" << std::endl;
+  // depthGT.save_png("depthGT.png");
 //  exit(0);
 
+  if(configuration_.isGtSplitted()){
+
+    cimg_library::CImg<float> depth;
+    for (int i = 0; i < configuration_.getGtPaths().size(); ++i){
+      
+      std::ifstream file(configuration_.getGtPaths()[i]);
+      file >> meshGt_;
+      file.close();
+      std::cout<<configuration_.getGtPaths()[i] <<" "<<meshGt_.size_of_vertices()<<std::endl;
+
+      DepthMapFromMesh sfpcl(&meshGt_);
+      sfpcl.computeMap(configuration_.getCameras()[curFrame], curFrame);
+
+
+      if( i == 0 )
+        depthGT = sfpcl.getDepth();
+      else
+        for (int col = 0; col < configuration_.getCameras()[curFrame].imageWidth; ++col) 
+          for (int row = 0; row < configuration_.getCameras()[curFrame].imageHeight; ++row) 
+            if (sfpcl.getDepth()(col, row) > 0.0 && (sfpcl.getDepth()(col, row) < depthGT(col, row) || depthGT(col, row) <0.0))
+              depthGT(col, row) = sfpcl.getDepth()(col, row);
+      
+    }
+         
+  }else{
+
+    std::ifstream file2(configuration_.getGtPath());
+    file2 >> meshGt_;
+
+    std::cout<<configuration_.getGtPath()<<" "<<meshGt_.size_of_vertices()<<std::endl;
+    DepthMapFromMesh sfpcl(&meshGt_);
+    sfpcl.computeMap(configuration_.getCameras()[curFrame], curFrame);
+    depthGT = sfpcl.getDepth();
+  }
+
+//exit(0);
   DepthMapFromMesh dmfm(&meshToBeCompared_);
   dmfm.computeMap(configuration_.getCameras()[curFrame], curFrame);
-
-  DepthFromPCL sfpcl;
-  sfpcl.run(configuration_.getGtPath(),configuration_.getCameras()[curFrame]);
-  sfpcl.getDepth().save_png("depthGT.png");
-  depthGT =sfpcl.getDepth();
+  // DepthFromPCL sfpcl;
+  // sfpcl.run(configuration_.getGtPath(), configuration_.getCameras()[curFrame]);
+  depthGT.save_png("depthGT.png");
+  dmfm.getDepth().save_png("dmfm.png");
   accumulateDepthMaps(depthGT, dmfm.getDepth());
   countImages_++;
   std::cout << "DONE." << std::endl;
@@ -60,46 +125,27 @@ void GtComparator::run() {
   printComparison();
 }
 
-void GtComparator::run2() {
-  if (!configuration_.isStereo()) {
-    registerCameras();
-  }
-
-  //importGT();
-  //importMesh();
+void GtComparator::run3() {
+  //registerCameras();
   std::ifstream file(configuration_.getMeshPath());
   file >> meshToBeCompared_;
 
-//  std::cout << "GtComparator:: writing mesh...";
-//  std::cout.flush();
-//  std::ofstream fileTest1("testMesh.off");
-//  fileTest1 << meshToBeCompared_;
-//  std::cout << "DONE." << std::endl;
-
-//  std::cout<<"GtComparator:: writing mesh gt...";
-//  std::cout.flush();
-//  std::ofstream fileTest2("testGT.off");
-//  fileTest2 << meshGt_;
-//  std::cout<<"DONE."<<std::endl;
-
-  for (int curFrame = configuration_.getInitFrame(); curFrame < configuration_.getLastFrame(); (configuration_.isStereo() ? curFrame += 2 : ++curFrame)) {
+  for (int curFrame = configuration_.getInitFrame(); curFrame < configuration_.getLastFrame(); (configuration_.isStereo() ? curFrame += 5 : ++curFrame)) {
+    std::cout << "GtComparator:: collecting errors frame num " << curFrame << std::flush;
     if (configuration_.isStereo()) {
-      float curbaseline = glm::length(configuration_.getCameras()[curFrame].center - configuration_.getCameras()[curFrame + 1].center);
+      float curbaseline = glm::length(configuration_.getCameras()[curFrame].center - configuration_.getCameras()[curFrame +1].center);
       scale_ = configuration_.getBaseline() / curbaseline;
-      std::cout << "SCALE" << scale_ << std::endl;
-
-//        exit(0);
     }
-    std::cout << "GtComparator:: collecting errors frame num " << curFrame;
-    std::cout.flush();
-
     DepthFromVelodyne frv(configuration_.getGtPath(), configuration_.getCameras()[0].imageHeight, configuration_.getCameras()[0].imageWidth);
     frv.createDepthFromIdx(curFrame);
 
     DepthMapFromMesh dmfm(&meshToBeCompared_);
-    dmfm.computeMap(configuration_.getCameras()[curFrame], curFrame);
+    dmfm.computeMap(configuration_.getCameras()[curFrame], curFrame,scale_);
 
+  // dmfm.getDepth().save_png("depthGT.png");
+  // frv.getDepth().save_png("depth.png");
     accumulateDepthMaps(frv.getDepth(), dmfm.getDepth());
+
     countImages_++;
     std::cout << "DONE." << std::endl;
   }
@@ -195,30 +241,35 @@ void GtComparator::accumulateDepthMaps(const cimg_library::CImg<float>& depthGT,
   float Xty = 0.0;
   for (int x = 0; x < depthGT._width; ++x) {
     for (int y = 0; y < depthGT._height; ++y) {
-      if (depth(x, y) > 0.0 && depthGT(x, y) > 0.0) {
+      if (depth(x, y) > 0.0 && depthGT(x, y) > 0.0 && std::fabs(depth(x, y) - depthGT(x, y)) < 20.0) {
         XtX = XtX + (depth(x, y) * depth(x, y));
         Xty = Xty + (depth(x, y) * depthGT(x, y));
       }
     }
   }
 
-  scale_ = Xty / XtX;
+  float curScale = Xty / XtX;
+  curScale=1.0;
+
+  std::cout << "SCALE " << Xty / XtX << std::endl;
+
 
   std::cout << std::endl << "SCALE OK " << scale_ << std::endl;
   for (int x = 0; x < depthGT._width; ++x) {
     for (int y = 0; y < depthGT._height; ++y) {
-      if (depth(x, y) > 0.0 && depthGT(x, y) > 0.0) {
-        res.errs_.push_back((scale_ * depth(x, y) - depthGT(x, y)));
+      if (depth(x, y) > 0.0 && depthGT(x, y) > 0.0 && std::fabs(curScale*depth(x, y) - depthGT(x, y)) < 2.0) {
+        res.errs_.push_back((curScale * depth(x, y) - depthGT(x, y)));
 
-        depthErrrr(x, y) = std::fabs((scale_ * depth(x, y) - depthGT(x, y)));
+        depthErrrr(x, y) = std::fabs((curScale * depth(x, y) - depthGT(x, y)));
       }
     }
   }
-  depthErrrr.normalize(0, 255);
-  depthErrrr.save_png("err.png");
+ depthErrrr.normalize(0, 255);
+ depthErrrr.save_png("err.png");
 }
 
 void GtComparator::registerCameras() {
+  std::cout<<"sizeA  " <<configuration_.getCameras().size()<<"sizeB  " <<configuration_.getCamerasGt().size()<<std::endl;
   if (configuration_.getCameras().size() <= 3 || configuration_.getCamerasGt().size() <= 3) {
     std::cout << "GtComparator::registerCameras not enough cameras to estimate the rototranslation" << std::endl;
   }
@@ -414,8 +465,7 @@ void GtComparator::printComparison() {
 
 }
 
-void GtComparator::loadDepthMapGT(const std::string &pathGT_,
-                              cimg_library::CImg<float> & depth, int w,int h) {
+void GtComparator::loadDepthMapGT(const std::string &pathGT_, cimg_library::CImg<float> & depth, int w, int h) {
 
   std::ifstream s;
 
@@ -430,7 +480,7 @@ void GtComparator::loadDepthMapGT(const std::string &pathGT_,
     std::istringstream iss(line);
     for (int curC = 0; curC < w; ++curC) {
       char c;
-      iss >> depth(curC,curR);
+      iss >> depth(curC, curR);
       iss >> c;
     }
   }

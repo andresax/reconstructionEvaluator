@@ -21,14 +21,17 @@ endif()
   FIND_PACKAGE(X11)
   FIND_PACKAGE(Threads REQUIRED)
 
-  
+   
   link_directories(${X11_LIB_DIRS})
   
   
   include_directories(${X11_INCLUDE_DIR} )
+find_package(PCL 1.7 REQUIRED) 
+list(REMOVE_ITEM PCL_LIBRARIES "vtkproj4")
 # ----------------------- INCLUDES ----------------------------
 include_directories( 
                       ${OpenCV_INCLUDE_DIRS} 
+                      ${PCL_INCLUDE_DIRS}
                       ${CGAL_INCLUDE_DIRS}
                       include/reconstructionEvaluator/
                       include/reconstructionEvaluator/camParser/
@@ -37,6 +40,8 @@ include_directories(
                       external/eigen
                       external/assimp/include/assimp
                       ) 
+link_directories(${PCL_LIBRARY_DIRS})
+add_definitions(${PCL_DEFINITIONS})
 # ----------------------- GCC FLAGS ----------------------------
  
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -frounding-math  -lpthread -lX11 -L/usr/X11R6/lib")
@@ -60,6 +65,7 @@ target_link_libraries(reconstructionEvaluator ${OpenCV_LIBS}
                                             ${Boost_LIBRARIES}
                                             ${ASSIMP_LIBRARY} 
                                             ${X11_LIBRARIES} 
+                                            ${PCL_LIBRARIES}
                                             )
 
 

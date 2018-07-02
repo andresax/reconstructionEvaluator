@@ -43,6 +43,10 @@ public:
     return camerasGt_;
   }
 
+  const std::vector<std::string>& getGtPaths() const {
+    return gtPaths_;
+  }
+
   const int & getInitFrame() const {
     return initFrame_;
   }
@@ -58,6 +62,9 @@ public:
   bool isStereo() const {
     return stereo_;
   }
+  bool isGtSplitted() const {
+    return gtSplitted_;
+  }
 
 private:
   std::ifstream file_;
@@ -65,6 +72,8 @@ private:
 
   std::string meshPath_;
   std::string gtPath_;
+  std::vector<std::string> gtPaths_;
+  bool gtSplitted_;
   std::vector<CameraType> cameras_;
   std::vector<CameraType> camerasGt_;
   std::vector<int> camerasIdx_;

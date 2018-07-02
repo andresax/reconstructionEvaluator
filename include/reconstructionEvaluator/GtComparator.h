@@ -24,6 +24,7 @@ public:
   virtual ~GtComparator();
   void run();
   void run2();
+  void run3();
 private:
   void importGT();
   void importMesh();

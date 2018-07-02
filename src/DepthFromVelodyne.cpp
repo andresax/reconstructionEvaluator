@@ -241,7 +241,7 @@ void DepthFromVelodyne::createDepthFromIdx(int idx) {
         pt3 = pt3d * tr;
       }
       if (rawSeq_ == true) {
-        pt2dH = pt3d * E_velo_to_cam * R_rect[0] * P[2];
+        pt2dH = pt3d * E_velo_to_cam * R_rect[0] * P[0];
 //        utilities::printMatrix("E_velo_to_cam",E_velo_to_cam);
 //        utilities::printMatrix("pt3d * E_velo_to_cam",pt3d * E_velo_to_cam);
 //        utilities::printMatrix("pt3d",pt3d);
@@ -253,7 +253,7 @@ void DepthFromVelodyne::createDepthFromIdx(int idx) {
       int idX = static_cast<int>(pt2d.x);
       int idY = static_cast<int>(pt2d.y);
 
-      if (distance < 20.0 && 0 < idX && idX < imageWidth_ && //
+      if (distance < 15.0 && 0 < idX && idX < imageWidth_ && //
           0 < idY && idY < imageHeight_ && //
           distance > 0.0 && (distance < depth(idX, idY) || depth(idX, idY) < 0.0)) {
         depth(idX, idY) = distance;
@@ -262,7 +262,7 @@ void DepthFromVelodyne::createDepthFromIdx(int idx) {
 
 
         glm::vec3 vecCenterpt2d = distance*glm::normalize(
-            glm::vec3((idX - P[2][0][2]) / P[2][0][0], (idY - P[2][1][2]) / P[2][1][1], 1.0));
+            glm::vec3((idX - P[0][0][2]) / P[0][0][0], (idY - P[0][1][2]) / P[0][1][1], 1.0));
 
         prprp.push_back(glm::vec3(vecCenterpt2d.x, vecCenterpt2d.y, vecCenterpt2d.z));
       }
@@ -270,16 +270,16 @@ void DepthFromVelodyne::createDepthFromIdx(int idx) {
 
   }
 
-  std::ofstream file("velo2.ply");
-  file << "ply" << std::endl << "format ascii 1.0" << std::endl << "element vertex " << prprp.size() << std::endl << "property float x" << std::endl
-      << "property float y" << std::endl << "property float z" << std::endl << " end_header" << std::endl;
-  for (auto pt3 : prprp) {
+ // std::ofstream file("velo2.ply");
+ // file << "ply" << std::endl << "format ascii 1.0" << std::endl << "element vertex " << prprp.size() << std::endl << "property float x" << std::endl
+ //     << "property float y" << std::endl << "property float z" << std::endl << " end_header" << std::endl;
+ // for (auto pt3 : prprp) {
 
-    file << pt3.x << " " << pt3.y << " " << pt3.z << " " << std::endl;
-  }
-  file.close();
+ //   file << pt3.x << " " << pt3.y << " " << pt3.z << " " << std::endl;
+ // }
+ // file.close();
 //  depth.save_ascii("depth.txt");
-  depth.save_png("depth.png");
+ // depth.save_png("depth.png");
 
   input.close();
 //  exit(0);

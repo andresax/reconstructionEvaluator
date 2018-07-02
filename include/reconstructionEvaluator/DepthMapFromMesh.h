@@ -22,7 +22,7 @@ public:
     mesh_ = mesh;
   }
 
-  void computeMap(const CameraType &cam,int nnum=0);
+  void computeMap(const CameraType &cam,int nnum=0,float scale=1.0);
 
   const cimg_library::CImg<float>& getDepth() const {
     return depth;

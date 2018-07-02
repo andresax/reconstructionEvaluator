@@ -21,6 +21,7 @@ Configuration::Configuration(const std::string &path) {
   lastFrame_ = 0;
   stereo_=false;
   baseline_=0.0;
+  gtSplitted_ = false;
 }
 
 void Configuration::setConfiguration(const std::string &path) {
@@ -35,6 +36,7 @@ Configuration::Configuration() {
   lastFrame_ = 0;
   stereo_=false;
   baseline_=0.0;
+  gtSplitted_ = false;
 }
 Configuration::~Configuration() {
 }
@@ -46,6 +48,20 @@ void Configuration::parse() {
   std::string camerasGT;
 
   utilities::readLineAndStore(file_, gtPath_);
+  if(gtPath_.length()==1){
+    gtSplitted_ = true;
+    int numParts;
+    std::stringstream s(gtPath_);
+    s>>numParts;
+    for (int i = 0; i < numParts; ++i){
+      std::cout<<"GT splitted"<<std::endl;
+      std::string tmp;
+      utilities::readLineAndStore(file_, tmp);
+      gtPaths_.push_back(tmp);
+    }
+  }
+
+
   cameraParser.setPathBaseGt(gtPath_);
   utilities::readLineAndStore(file_, meshPath_);
   utilities::readLineAndStore(file_, cameraPoses);

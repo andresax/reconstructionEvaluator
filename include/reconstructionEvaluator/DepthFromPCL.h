@@ -16,10 +16,11 @@ public:
     return depth;
   }
 
-  void run( std::string path, const CameraType& cam);
+  void run(std::string path, const CameraType& cam);
 private:
   cimg_library::CImg<float> depth;
-
+  bool loaded = false;
+  std::vector<std::vector<float> > points;
 };
 
 } /* namespace reconstructorEvaluator */
