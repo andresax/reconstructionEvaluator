@@ -270,16 +270,16 @@ void DepthFromVelodyne::createDepthFromIdx(int idx) {
 
   }
 
- // std::ofstream file("velo2.ply");
- // file << "ply" << std::endl << "format ascii 1.0" << std::endl << "element vertex " << prprp.size() << std::endl << "property float x" << std::endl
- //     << "property float y" << std::endl << "property float z" << std::endl << " end_header" << std::endl;
- // for (auto pt3 : prprp) {
+//  std::ofstream file("velo2.ply");
+//  file << "ply" << std::endl << "format ascii 1.0" << std::endl << "element vertex " << prprp.size() << std::endl << "property float x" << std::endl
+//      << "property float y" << std::endl << "property float z" << std::endl << " end_header" << std::endl;
+//  for (auto pt3 : prprp) {
 
- //   file << pt3.x << " " << pt3.y << " " << pt3.z << " " << std::endl;
- // }
- // file.close();
-//  depth.save_ascii("depth.txt");
- // depth.save_png("depth.png");
+//    file << pt3.x << " " << pt3.y << " " << pt3.z << " " << std::endl;
+//  }
+//  file.close();
+// //  depth.save_ascii("depth.txt");
+//  // depth.save_png("depth.png");
 
   input.close();
 //  exit(0);

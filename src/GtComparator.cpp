@@ -18,6 +18,7 @@
 #include <utilities.hpp>
 #include <CImg/CImg.h>
 #include <opencv2/core.hpp>
+#include <CGAL/IO/Polyhedron_iostream.h>
 
 namespace reconstructorEvaluator {
 
@@ -127,6 +128,7 @@ void GtComparator::run() {
 
 void GtComparator::run3() {
   //registerCameras();
+    std::cout << "configuration_.getMeshPath() " << configuration_.getMeshPath() << std::endl;
   std::ifstream file(configuration_.getMeshPath());
   file >> meshToBeCompared_;
 
@@ -142,10 +144,10 @@ void GtComparator::run3() {
     DepthMapFromMesh dmfm(&meshToBeCompared_);
     dmfm.computeMap(configuration_.getCameras()[curFrame], curFrame,scale_);
 
-  // dmfm.getDepth().save_png("depthGT.png");
-  // frv.getDepth().save_png("depth.png");
+  // dmfm.getDepth().save_png("depth.png");
+  // frv.getDepth().save_png("depthGT.png");
     accumulateDepthMaps(frv.getDepth(), dmfm.getDepth());
-
+// exit(0);
     countImages_++;
     std::cout << "DONE." << std::endl;
   }
