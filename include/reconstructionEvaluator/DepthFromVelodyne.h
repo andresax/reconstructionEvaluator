@@ -25,6 +25,8 @@ public:
     return depth;
   }
 
+  void setCalibCam(float cx, float cy, float fx, float fy);
+
 private:
   std::string pathBase_;
   std::vector<glm::mat4> P;
@@ -36,6 +38,8 @@ private:
   cimg_library::CImg<float> depth;
   bool odoSeq_;
   bool rawSeq_;
+  float cx_, cy_, fx_, fy_;
+  bool cameraSet;
 
   void loadCalib();
 };

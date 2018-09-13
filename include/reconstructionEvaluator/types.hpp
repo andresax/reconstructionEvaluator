@@ -10,6 +10,7 @@
 
 #include <glm.hpp>
 #include <CGAL/Simple_cartesian.h>
+#undef Success
 #include <CGAL/Polyhedron_3.h>
 //#include <CImg/CImg.h>
 
@@ -19,6 +20,7 @@ struct CameraType {
   glm::mat3 rotation;
   glm::vec3 translation;
   glm::mat4 cameraMatrix;
+  glm::mat4 mvp;
   glm::vec3 center;
   glm::vec3 distortion_coeff;
 

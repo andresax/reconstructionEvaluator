@@ -7,6 +7,7 @@
 
 #include <DepthFromVelodyne.h>
 #include <boost/filesystem.hpp>
+#undef Success
 #include <utilities.hpp>
 #include <CImg/CImg.h>
 
@@ -16,6 +17,8 @@ DepthFromVelodyne::DepthFromVelodyne(const std::string &path, const int & imageH
 
   rawSeq_ = false;
   odoSeq_ = false;
+  cameraSet = false;
+  cx_=0;cy_=0;fx_=0;fy_=0;
   pathBase_ = path;
   imageHeight_ = imageHeight;
   imageWidth_ = imageWidth;
@@ -212,6 +215,15 @@ void DepthFromVelodyne::loadCalib() {
   input.close();
 }
 
+
+void DepthFromVelodyne::setCalibCam(float cx, float cy, float fx, float fy){
+  cameraSet=true;
+  cx_ = cx;
+  cy_ = cy;
+  fx_ = fx;
+  fy_ = fy;
+}
+
 void DepthFromVelodyne::createDepthFromIdx(int idx) {
 
   std::string filename;
@@ -227,6 +239,13 @@ void DepthFromVelodyne::createDepthFromIdx(int idx) {
   std::vector<glm::vec3> prprp;
   depth = cimg_library::CImg<float>(imageWidth_, imageHeight_);
   depth.fill(-1.0);
+      // if (cameraSet==true){
+      //   P[0][0][0] = fx_;
+      //   P[0][1][1] = fy_;
+      //   P[0][0][2] = cx_;
+      //   P[0][1][2] = cy_; 
+      // }
+
   while (input.good() && !input.eof()) {
     float dummy;
     float point[3];
@@ -240,7 +259,11 @@ void DepthFromVelodyne::createDepthFromIdx(int idx) {
         pt2dH = pt3d * tr * P[0];
         pt3 = pt3d * tr;
       }
+// utilities::printMatrix(P[0]);
+// exit(0);
+
       if (rawSeq_ == true) {
+
         pt2dH = pt3d * E_velo_to_cam * R_rect[0] * P[0];
 //        utilities::printMatrix("E_velo_to_cam",E_velo_to_cam);
 //        utilities::printMatrix("pt3d * E_velo_to_cam",pt3d * E_velo_to_cam);
@@ -264,12 +287,12 @@ void DepthFromVelodyne::createDepthFromIdx(int idx) {
         glm::vec3 vecCenterpt2d = distance*glm::normalize(
             glm::vec3((idX - P[0][0][2]) / P[0][0][0], (idY - P[0][1][2]) / P[0][1][1], 1.0));
 
-        prprp.push_back(glm::vec3(vecCenterpt2d.x, vecCenterpt2d.y, vecCenterpt2d.z));
+         prprp.push_back(glm::vec3(vecCenterpt2d.x, vecCenterpt2d.y, vecCenterpt2d.z));
       }
     }
 
   }
-
+// if(idx>200){
 //  std::ofstream file("velo2.ply");
 //  file << "ply" << std::endl << "format ascii 1.0" << std::endl << "element vertex " << prprp.size() << std::endl << "property float x" << std::endl
 //      << "property float y" << std::endl << "property float z" << std::endl << " end_header" << std::endl;
@@ -278,8 +301,9 @@ void DepthFromVelodyne::createDepthFromIdx(int idx) {
 //    file << pt3.x << " " << pt3.y << " " << pt3.z << " " << std::endl;
 //  }
 //  file.close();
-// //  depth.save_ascii("depth.txt");
-//  // depth.save_png("depth.png");
+//  }
+//  depth.save_ascii("depth.txt");
+ // depth.save_png("depth.png");
 
   input.close();
 //  exit(0);

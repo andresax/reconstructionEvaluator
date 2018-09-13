@@ -29,6 +29,9 @@ public:
 
 private:
 
+  void convertToMvp2(CameraType &cam, glm::mat4 &mvpOut);
+  void computeProjectionMatrix2(glm::mat3 &intrinsics, int h, int w, glm::mat4 &projectionMatrixOut);
+  void computeModelViewMatrix2(glm::mat3 &rotation, glm::vec3 &translation, glm::mat4 &modelViewMatrixOut);
   std::vector<CameraType> cameras_;
   boost::filesystem::path pathBaseGt_;
 

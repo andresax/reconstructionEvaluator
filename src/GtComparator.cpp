@@ -11,6 +11,7 @@
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
 #include <DepthMapFromMesh.h>
+#include <DepthMapFromMeshGPU.h>
 #include <DepthFromVelodyne.h>
 #include <DepthFromPCL.h>
 #include <Eigen/Core>
@@ -111,14 +112,32 @@ void GtComparator::run() {
     depthGT = sfpcl.getDepth();
   }
 
-//exit(0);
-  DepthMapFromMesh dmfm(&meshToBeCompared_);
-  dmfm.computeMap(configuration_.getCameras()[curFrame], curFrame);
-  // DepthFromPCL sfpcl;
+
+  std::ofstream fileOut("depthMapFloatGT.txt");
+
+  
+
+  for (int i = 0; i < depthGT.height(); i++) {
+    for (int j = 0; j < depthGT.width(); j++) {
+      fileOut << " " << depthGT(i, j);
+    }
+    fileOut << std::endl;
+  }
+
+
+
+exit(0);
+  // DepthMapFromMesh dmfm(&meshToBeCompared_);
+  // dmfm.computeMap(configuration_.getCameras()[curFrame], curFrame);
+  DepthFromPCL sfpcl;
+  sfpcl.run("/home/andrea/workspaceC/incrementalMVS/FountainInitOK.off", configuration_.getCameras()[curFrame]);
   // sfpcl.run(configuration_.getGtPath(), configuration_.getCameras()[curFrame]);
   depthGT.save_png("depthGT.png");
-  dmfm.getDepth().save_png("dmfm.png");
-  accumulateDepthMaps(depthGT, dmfm.getDepth());
+  //sfpcl.save_png("depthGT.png");
+  
+  //dmfm.getDepth().save_png("dmfm.png");
+  sfpcl.getDepth().save_png("dmfm.png");
+  accumulateDepthMaps(depthGT, sfpcl.getDepth());
   countImages_++;
   std::cout << "DONE." << std::endl;
 
@@ -132,22 +151,34 @@ void GtComparator::run3() {
   std::ifstream file(configuration_.getMeshPath());
   file >> meshToBeCompared_;
 
-  for (int curFrame = configuration_.getInitFrame(); curFrame < configuration_.getLastFrame(); (configuration_.isStereo() ? curFrame += 5 : ++curFrame)) {
+  DepthMapFromMeshGPU dmfm(&meshToBeCompared_,configuration_.getCameras()[0].imageWidth, configuration_.getCameras()[0].imageHeight);
+  DepthFromVelodyne frv(configuration_.getGtPath(), configuration_.getCameras()[0].imageHeight, configuration_.getCameras()[0].imageWidth);
+  glm::mat3 intrinsics = configuration_.getCameras()[0].intrinsics;
+  frv.setCalibCam(intrinsics[0][2], intrinsics[1][2], intrinsics[0][0], intrinsics[1][1]);
+
+  // std::cout<<intrinsics[0][2]<<std::endl;
+  // std::cout<<intrinsics[1][2]<<std::endl;
+  // std::cout<<intrinsics[0][0]<<std::endl;
+  // std::cout<<intrinsics[1][1]<<std::endl;
+  // exit(0);
+
+  for (int curFrame = configuration_.getInitFrame(); curFrame < configuration_.getLastFrame(); (configuration_.isStereo() ? curFrame += 6 : ++curFrame)) {
     std::cout << "GtComparator:: collecting errors frame num " << curFrame << std::flush;
-    if (configuration_.isStereo()) {
-      float curbaseline = glm::length(configuration_.getCameras()[curFrame].center - configuration_.getCameras()[curFrame +1].center);
-      scale_ = configuration_.getBaseline() / curbaseline;
-    }
-    DepthFromVelodyne frv(configuration_.getGtPath(), configuration_.getCameras()[0].imageHeight, configuration_.getCameras()[0].imageWidth);
+    // if (configuration_.isStereo()) {
+    //   float curbaseline = glm::length(configuration_.getCameras()[curFrame].center - configuration_.getCameras()[curFrame +1].center);
+    //   scale_ = configuration_.getBaseline() / curbaseline;
+    // }
     frv.createDepthFromIdx(curFrame);
 
-    DepthMapFromMesh dmfm(&meshToBeCompared_);
-    dmfm.computeMap(configuration_.getCameras()[curFrame], curFrame,scale_);
-
-  // dmfm.getDepth().save_png("depth.png");
-  // frv.getDepth().save_png("depthGT.png");
+    // DepthMapFromMesh dmfm(&meshToBeCompared_);
+    dmfm.computeMap(configuration_.getCameras()[curFrame],curFrame);
+// if(curFrame>200){
+//    dmfm.getDepth().save_png("depth.png");
+//    frv.getDepth().save_png("depthGT.png");
+//  // 
+//     exit(0);
+  // }
     accumulateDepthMaps(frv.getDepth(), dmfm.getDepth());
-// exit(0);
     countImages_++;
     std::cout << "DONE." << std::endl;
   }
@@ -213,13 +244,16 @@ void GtComparator::compareDepthMaps() {
   float sum = std::accumulate(res.errs_.begin(), res.errs_.end(), 0.0);
 
   std::vector<float> sqrVec;
-  std::transform(res.errs_.begin(), res.errs_.end(), std::back_inserter(sqrVec), [](int n) {return std::pow(n,2);});
+  std::transform(res.errs_.begin(), res.errs_.end(), std::back_inserter(sqrVec), [](float n) {return std::fabs(std::pow(n,2));});
   float sumSqr = std::accumulate(sqrVec.begin(), sqrVec.end(), 0.0);
   std::vector<float> absVec;
-  std::transform(res.errs_.begin(), res.errs_.end(), std::back_inserter(absVec), [](int n) {return std::fabs(n);});
+  std::transform(res.errs_.begin(), res.errs_.end(), std::back_inserter(absVec), [](float n) {return std::fabs(n);});
   float sumAbs = std::accumulate(absVec.begin(), absVec.end(), 0.0);
 
   res.mean = sum / res.errs_.size();
+  // std::cout<<"RMSE CAZZO "<<sum<<" "<<res.errs_.size()<<std::endl;
+  // std::cout<<"RMSE CAZZO "<<sumSqr<<" "<<res.errs_.size()<<std::endl;
+  // std::cout<<"RMSE CAZZO "<<sumAbs<<" "<<res.errs_.size()<<std::endl;
   res.rmse = std::sqrt(sumSqr / res.errs_.size());
   res.mae = sumAbs / res.errs_.size();
 

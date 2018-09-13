@@ -13,6 +13,9 @@ find_package(CGAL REQUIRED)
 find_package(MPRF REQUIRED) #multiple precision useful for cgal
 find_package(ASSIMP REQUIRED)
 find_package(OpenMP)
+find_package(OpenGL REQUIRED)
+find_package(GLUT REQUIRED)
+find_package(GLEW REQUIRED)  
 if (OPENMP_FOUND) 
     set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
@@ -30,9 +33,14 @@ find_package(PCL 1.7 REQUIRED)
 list(REMOVE_ITEM PCL_LIBRARIES "vtkproj4")
 # ----------------------- INCLUDES ----------------------------
 include_directories( 
+                      ${GLEW_INCLUDE_DIRS}
+                      ${GMPXX_INCLUDE_DIR}
                       ${OpenCV_INCLUDE_DIRS} 
+                      ${CGAL_INCLUDE_DIRS}
+                      ${SOIL_INCLUDE_DIRS}
                       ${PCL_INCLUDE_DIRS}
                       ${CGAL_INCLUDE_DIRS}
+                      ${GLFW_INCLUDE_DIR} 
                       include/reconstructionEvaluator/
                       include/reconstructionEvaluator/camParser/
                       external/glm/glm/
@@ -58,9 +66,16 @@ file(GLOB_RECURSE gtComp_SOURCE
 
 add_executable(reconstructionEvaluator ${gtComp_SOURCE})
 target_link_libraries(reconstructionEvaluator ${OpenCV_LIBS} 
-                                              ${MPRF_LIBRARIES}
-                                              ${LAPACK_LIBRARIES}
-                                            -lmpfr
+                                            ${GMPXX_LIBRARIES}
+                                            ${GMP_LIBRARIES}
+                                            ${OPENGL_LIBRARIES}
+                                            ${GLEW_LIBRARIES}
+                                            ${GLFW_INCLUDE_DIRS}
+                                            ${MPRF_LIBRARIES}
+                                            ${LAPACK_LIBRARIES}
+                                            mpfr
+                                            glfw
+                                            SOIL
                                             ${CGAL_LIBRARY}
                                             ${Boost_LIBRARIES}
                                             ${ASSIMP_LIBRARY} 
