@@ -66,10 +66,11 @@ void GtComparator::run2() {
 
 
 void GtComparator::run() {
-  std::ifstream file(configuration_.getMeshPath());
-  file >> meshToBeCompared_;
+  // std::ifstream file(configuration_.getMeshPath());
+  // file >> meshToBeCompared_;
+  for(int curFrame = configuration_.getInitFrame(); curFrame <= configuration_.getLastFrame();curFrame++){
   cimg_library::CImg<float> depthGT;
-  int curFrame = configuration_.getInitFrame();
+  // int curFrame = configuration_.getInitFrame();
   std::cout << "GtComparator:: collecting errors frame num " << curFrame << std::endl;
   // std::cout << "loading gt... " << std::flush;
   // loadDepthMapGT(configuration_.getGtPath(), depthGT, configuration_.getCameras()[curFrame].imageWidth,configuration_.getCameras()[curFrame].imageHeight);
@@ -79,25 +80,32 @@ void GtComparator::run() {
 
   if(configuration_.isGtSplitted()){
 
+    std::cout<<"Multiple Mesh Mode"<<std::endl;
     cimg_library::CImg<float> depth;
     for (int i = 0; i < configuration_.getGtPaths().size(); ++i){
-      
+  Polyhedron meshGtCur;
       std::ifstream file(configuration_.getGtPaths()[i]);
-      file >> meshGt_;
+      file >> meshGtCur;
       file.close();
-      std::cout<<configuration_.getGtPaths()[i] <<" "<<meshGt_.size_of_vertices()<<std::endl;
+      std::cout<<configuration_.getGtPaths()[i] <<" "<<meshGtCur.size_of_vertices()<<std::endl;
 
-      DepthMapFromMesh sfpcl(&meshGt_);
+      // DepthMapFromMesh sfpcl(&meshGt_);
+      DepthMapFromMeshGPU sfpcl(&meshGtCur,configuration_.getCameras()[0].imageWidth, configuration_.getCameras()[0].imageHeight);
       sfpcl.computeMap(configuration_.getCameras()[curFrame], curFrame);
 
 
-      if( i == 0 )
+      if (i==0) {
         depthGT = sfpcl.getDepth();
-      else
-        for (int col = 0; col < configuration_.getCameras()[curFrame].imageWidth; ++col) 
-          for (int row = 0; row < configuration_.getCameras()[curFrame].imageHeight; ++row) 
-            if (sfpcl.getDepth()(col, row) > 0.0 && (sfpcl.getDepth()(col, row) < depthGT(col, row) || depthGT(col, row) <0.0))
-              depthGT(col, row) = sfpcl.getDepth()(col, row);
+        depthGT.fill(-1.0);
+      }
+
+      cimg_library::CImg<float> depthGTCur;
+      depthGTCur = sfpcl.getDepth();
+
+      for (int col = 0; col < configuration_.getCameras()[curFrame].imageWidth; ++col) 
+        for (int row = 0; row < configuration_.getCameras()[curFrame].imageHeight; ++row) 
+          if (depthGTCur(col, row) > 0.0 && (depthGTCur(col, row) < depthGT(col, row) || depthGT(col, row) <0.0))
+            depthGT(col, row) = depthGTCur(col, row);
       
     }
          
@@ -106,43 +114,60 @@ void GtComparator::run() {
     std::ifstream file2(configuration_.getGtPath());
     file2 >> meshGt_;
 
+    std::cout<<"One Mesh Mode"<<std::endl;
     std::cout<<configuration_.getGtPath()<<" "<<meshGt_.size_of_vertices()<<std::endl;
-    DepthMapFromMesh sfpcl(&meshGt_);
+      // DepthMapFromMesh sfpcl(&meshGt_);
+    DepthMapFromMeshGPU sfpcl(&meshGt_,configuration_.getCameras()[0].imageWidth, configuration_.getCameras()[0].imageHeight);
     sfpcl.computeMap(configuration_.getCameras()[curFrame], curFrame);
     depthGT = sfpcl.getDepth();
   }
 
-
-  std::ofstream fileOut("depthMapFloatGT.txt");
-
-  
-
-  for (int i = 0; i < depthGT.height(); i++) {
-    for (int j = 0; j < depthGT.width(); j++) {
-      fileOut << " " << depthGT(i, j);
+std::stringstream ss,ss1;
+ss<<"depthMapFloatGT"<< curFrame<<".txt";
+  std::ofstream fileOut(ss.str());
+  float minD = -1,maxD=0;
+  for (int j = 0; j < depthGT.height(); j++) {
+    for (int i = 0; i < depthGT.width(); i++) {
+        fileOut << " " << depthGT(i, j);
+      if( depthGT(i, j) > 0.0){
+        minD = (minD<0||minD>depthGT(i,j))?depthGT(i,j):minD;
+        maxD = (maxD<depthGT(i,j))?depthGT(i,j):maxD;
+      }
     }
     fileOut << std::endl;
   }
+  fileOut.close();
+
+  cimg_library::CImg<unsigned char> depthGT8U(depthGT.width(), depthGT.height());
+  for (int i = 0; i < depthGT8U.width(); i++) {
+    for (int j = 0; j < depthGT8U.height(); j++) {
+        depthGT8U(i,j) = 255.0*(depthGT(i, j) - minD) / (maxD-minD);
+    }
+  }
+ss1<<"depthGTFountain"<< curFrame<<".png";
+const std::string filename = ss1.str();
+std::cout<<filename<<std::endl;
+ depthGT8U.save_png(filename.c_str());
 
 
-
+}
 exit(0);
-  // DepthMapFromMesh dmfm(&meshToBeCompared_);
-  // dmfm.computeMap(configuration_.getCameras()[curFrame], curFrame);
-  DepthFromPCL sfpcl;
-  sfpcl.run("/home/andrea/workspaceC/incrementalMVS/FountainInitOK.off", configuration_.getCameras()[curFrame]);
-  // sfpcl.run(configuration_.getGtPath(), configuration_.getCameras()[curFrame]);
-  depthGT.save_png("depthGT.png");
-  //sfpcl.save_png("depthGT.png");
+  // // DepthMapFromMesh dmfm(&meshToBeCompared_);
+  // // dmfm.computeMap(configuration_.getCameras()[curFrame], curFrame);
+  // DepthFromPCL sfpcl;
+  // sfpcl.run("/home/andrea/workspaceC/incrementalMVS/FountainInitOK.off", configuration_.getCameras()[curFrame]);
+  // // sfpcl.run(configuration_.getGtPath(), configuration_.getCameras()[curFrame]);
+  // depthGT.save_png("depthGT.png");
+  // //sfpcl.save_png("depthGT.png");
   
-  //dmfm.getDepth().save_png("dmfm.png");
-  sfpcl.getDepth().save_png("dmfm.png");
-  accumulateDepthMaps(depthGT, sfpcl.getDepth());
-  countImages_++;
-  std::cout << "DONE." << std::endl;
+  // //dmfm.getDepth().save_png("dmfm.png");
+  // sfpcl.getDepth().save_png("dmfm.png");
+  // accumulateDepthMaps(depthGT, sfpcl.getDepth());
+  // countImages_++;
+  // std::cout << "DONE." << std::endl;
 
-  compareDepthMaps();
-  printComparison();
+  // compareDepthMaps();
+  // printComparison();
 }
 
 void GtComparator::run3() {
@@ -176,7 +201,7 @@ void GtComparator::run3() {
 //    dmfm.getDepth().save_png("depth.png");
 //    frv.getDepth().save_png("depthGT.png");
 //  // 
-//     exit(0);
+     exit(0);
   // }
     accumulateDepthMaps(frv.getDepth(), dmfm.getDepth());
     countImages_++;

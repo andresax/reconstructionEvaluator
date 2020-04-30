@@ -5,10 +5,12 @@ layout (triangle_strip, max_vertices=3) out;
 
 in vec4 shadowCoordV[];
 in vec3 positionPV[];
+in vec3 positionPextrV[];
  
 out vec4 shadowCoord;
 out vec3 normalFacet;
 out vec3 positionP;
+out vec3 positionPextrP;
  
 void main(){
 
@@ -20,6 +22,7 @@ void main(){
     gl_Position = gl_in[i].gl_Position;
     shadowCoord = shadowCoordV[i];
     positionP = positionPV[i];
+    positionPextrP = positionPextrV[i];
     
     // done with the vertex
     EmitVertex();

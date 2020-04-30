@@ -32,14 +32,15 @@ DepthMapFromMeshGPU::DepthMapFromMeshGPU(Polyhedron *mesh, int imageWidth, int i
   initialize();
 }
 
-void DepthMapFromMeshGPU::computeMap(const CameraType& cam,int num,float scale_) {
-  // std::cout <<std::endl << "MVP..."<<std::endl;
-  // utilities::printMatrix(cam.mvp);
-  // std::cout <<std::endl << "DONE"<<std::endl;
+DepthMapFromMeshGPU::~DepthMapFromMeshGPU() {
+  std::vector<glm::vec3> verticesUnwrapped;
+  //free mem
+  glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObj_);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(int), &verticesUnwrapped[0], GL_STATIC_DRAW);
+  glfwTerminate();
+}
 
-  // std::cout <<std::endl << "Center..."<<std::endl;
-  // utilities::printMatrix(cam.center);
-  // std::cout <<std::endl << "DONE"<<std::endl;
+void DepthMapFromMeshGPU::computeMap(const CameraType& cam,int num,float scale_) {
 
   depth = cimg_library::CImg<float>(cam.imageWidth, cam.imageHeight);
   depth.fill(-1.0);
@@ -59,6 +60,7 @@ void DepthMapFromMeshGPU::computeMap(const CameraType& cam,int num,float scale_)
   static_cast<DepthMapXYZProgram *>(depthXYZProgram_)->setCenter(cam.center);
   static_cast<DepthMapXYZProgram *>(depthXYZProgram_)->setDepthTexture(depthTexture_);
   static_cast<DepthMapXYZProgram *>(depthXYZProgram_)->setMvp(cam.mvp);
+  static_cast<DepthMapXYZProgram *>(depthXYZProgram_)->setE(cam.extrinsics);
   depthXYZProgram_->compute(true);
   glFinish();
   // std::cout<<"DONE"<<std::endl;
@@ -67,38 +69,46 @@ void DepthMapFromMeshGPU::computeMap(const CameraType& cam,int num,float scale_)
   cv::Mat depthMat;
   CaptureViewPortFloatToFloat(depthMat, GL_RGB, 3,static_cast<DepthMapXYZProgram *>(depthXYZProgram_)->getFramebuffer());
   // sleep(1.0);  
-  // std::cout<<"CaptureViewPortFloat DONE"<<std::endl;
+   std::cout<<"CaptureViewPortFloat DONE"<<std::endl;
+
+  // std::vector<glm::vec3> prprp;
+  // for (int col = 0; col < depthMat.cols; ++col) {
+  //   for (int row = 0; row < depthMat.rows; ++row) {
+
+  //     float scale;//=0.9*0.50354;     scale=scale_*1.05;      scale=1.0f;
+  //     scale=1-0.532745;//0095
+  //     //scale=0.53;//0104
+  //     scale = 5.0;
+      
+  //     float distance = scale * depthMat.at<cv::Vec3f>(row, col)[2]+scale * depthMat.at<cv::Vec3f>(row, col)[0]+scale * depthMat.at<cv::Vec3f>(row, col)[1];
+
+  //     if (distance < 15.0 && distance > 0.0 ) {
+
+  //        float cx = 609.5593;
+  //       // float cy = 210.188;
+  //       // float cx = 612.0;
+  //       // float cy = 160.1;
+  //        float cy =172.854;
+  //       // float fx =758.88;
+  //       //float cx = cam.intrinsics[0][2];
+  //       //float cy = cam.intrinsics[1][2];
+  //          // float cy =172.854;
+  //       float fx =721.0;
+  //       float fy =721.0;
+  //       // float fx =cam.intrinsics[0][0];
+  //       // float fy =cam.intrinsics[1][1];
+  //       glm::vec3 vecCenterpt2d = glm::normalize(glm::vec3((col - cx)/fx , (row - cy)/fy , 1.0));
+  //       prprp.push_back(distance*vecCenterpt2d);
+  //       depth(col, row) = distance;
+  //     }
+  //   }
+  // }
 
 
-  std::vector<glm::vec3> prprp;
   for (int col = 0; col < depthMat.cols; ++col) {
     for (int row = 0; row < depthMat.rows; ++row) {
-
-      float scale;//=0.9*0.50354;     scale=scale_*1.05;      scale=1.0f;
-      scale=1-0.532745;//0095
-      scale=0.53;//0104
-      
-      float distance = scale * depthMat.at<cv::Vec3f>(row, col)[2]+scale * depthMat.at<cv::Vec3f>(row, col)[0]+scale * depthMat.at<cv::Vec3f>(row, col)[1];
-
-      if (distance < 15.0 && distance > 0.0 ) {
-
-         float cx = 609.5593;
-        // float cy = 210.188;
-        // float cx = 612.0;
-        // float cy = 160.1;
-         float cy =172.854;
-        // float fx =758.88;
-        //float cx = cam.intrinsics[0][2];
-        //float cy = cam.intrinsics[1][2];
-           // float cy =172.854;
-        float fx =721.0;
-        float fy =721.0;
-        // float fx =cam.intrinsics[0][0];
-        // float fy =cam.intrinsics[1][1];
-        glm::vec3 vecCenterpt2d = glm::normalize(glm::vec3((col - cx)/fx , (row - cy)/fy , 1.0));
-        prprp.push_back(distance*vecCenterpt2d);
-        depth(col, row) = distance;
-      }
+        if (depthMat.at<cv::Vec3f>(row, col)[2]>0)
+          depth(col, row) = depthMat.at<cv::Vec3f>(row, col)[2];
     }
   }
  //  if(num>200){

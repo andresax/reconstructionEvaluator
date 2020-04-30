@@ -18,6 +18,9 @@ public:
   void setMvp(const glm::mat4& mvp) {
     mvp_ = mvp;
   }
+  void setE(const glm::mat4& e) {
+    extr_ = e;
+  }
 
   const GLuint& getFramebuffer() const {
     return framebuffer_;
@@ -43,11 +46,12 @@ private:
   inline void createTransformFeedback(){};
 
   GLuint posAttribDepthId_;
-  GLuint mvpId_, centerid_;
+  GLuint mvpId_, centerid_,extrid_;
   GLuint framebuffer_,shadowMap_,depthTexture_;
   GLuint imageReprojTex_;
 
   glm::mat4 mvp_;
+  glm::mat4 extr_;
   glm::vec3 center_;
 };
 #endif /* DEPTHMAPPROGRAM_H_ */

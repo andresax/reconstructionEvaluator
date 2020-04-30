@@ -11,7 +11,7 @@ namespace reconstructorEvaluator {
 class DepthMapFromMeshGPU: public openGLUtilities::OpenGLProgram {
 public:
   DepthMapFromMeshGPU(Polyhedron *mesh, int imageWidth, int imageHeight);
-  virtual ~DepthMapFromMeshGPU() = default;
+  virtual ~DepthMapFromMeshGPU();
 
   void setMeshGt(Polyhedron*& mesh) {
     mesh_ = mesh;

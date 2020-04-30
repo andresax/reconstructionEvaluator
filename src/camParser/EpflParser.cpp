@@ -68,11 +68,12 @@ void EpflParser::parse(const boost::filesystem::path& path) {
     std::cout<<curCam.imageWidth<<std::endl;
     std::cout<<pathimage<<std::endl;
 
-//    std::cout<<"Counter" << i <<std::endl;
-//    utilities::printMatrix("intrinsics", curCam.intrinsics);
-//    utilities::printMatrix("cameraMatrix", curCam.cameraMatrix);
-//    utilities::printMatrix("translation", curCam.translation);
-//    utilities::printMatrix("rotation", curCam.rotation);
+   // std::cout<<"Counter" << i <<std::endl;
+   // utilities::printMatrix("intrinsics", curCam.intrinsics);
+   // utilities::printMatrix("cameraMatrix", curCam.cameraMatrix);
+   // utilities::printMatrix("translation", curCam.translation);
+   // utilities::printMatrix("rotation", curCam.rotation);
+   // utilities::printMatrix("extrinsics", curCam.extrinsics);
     cameras_.push_back(curCam);
     i++;
   }

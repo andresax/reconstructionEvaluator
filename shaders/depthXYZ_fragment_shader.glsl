@@ -3,6 +3,7 @@
 in vec4 shadowCoord;
 in vec3 normalFacet;
 in vec3 positionP;
+in vec3 positionPextrP;    
 
 layout(location = 0) out float fragmentdepth;
 
@@ -18,7 +19,8 @@ void main(){
   float shadowCoeff = textureProj(shadowMap, shadowCoordBiased);
 
 
-  fragmentdepth = shadowCoeff * length(center-positionP);
+  fragmentdepth = shadowCoeff * positionPextrP.z;
+  //fragmentdepth = shadowCoeff * length(center-positionP);
    // fragmentdepth = 10.5;
     
 }

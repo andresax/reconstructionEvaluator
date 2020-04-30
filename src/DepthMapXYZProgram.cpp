@@ -20,7 +20,8 @@ void DepthMapXYZProgram::initializeFramebufAndTex(GLuint& depthTextureId) {
   glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
   glGenTextures(1, &depthTextureId);
   glBindTexture(GL_TEXTURE_2D, depthTextureId);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, imageWidth_, imageHeight_, 0, GL_RED, GL_FLOAT, nullptr);
+  std::vector<GLfloat> emptyData(imageWidth_ * imageHeight_ * 3, -1.0);//all -2
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, imageWidth_, imageHeight_, 0, GL_RED, GL_FLOAT, &emptyData[0]);
   defaultTextureParameters();
   glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, depthTextureId, 0);
   GLuint tmpdeptht;
@@ -46,6 +47,7 @@ void DepthMapXYZProgram::compute(bool renderFrameBuf) {
 
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LESS);
+  glEnable(GL_CULL_FACE);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 //
 //  glEnable(GL_CULL_FACE);
@@ -53,6 +55,8 @@ void DepthMapXYZProgram::compute(bool renderFrameBuf) {
   shaderManager_.enable();
 
   glUniformMatrix4fv(mvpId_, 1, GL_FALSE, &mvp_[0][0]);
+  glUniformMatrix4fv(extrid_, 1, GL_FALSE, &extr_[0][0]);
+
   glUniform3fv(centerid_, 1, &center_[0]);
 
   glEnableVertexAttribArray(posAttribDepthId_);
@@ -92,5 +96,6 @@ void DepthMapXYZProgram::createUniforms() {
   mvpId_ = shaderManager_.getUniformLocation("MVP");
   shadowMap_ = shaderManager_.getUniformLocation("shadowMap");
   centerid_ = shaderManager_.getUniformLocation("center");
+  extrid_ = shaderManager_.getUniformLocation("E");
 }
 
